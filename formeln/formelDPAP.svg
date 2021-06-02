@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="128"
+   height="64"
+   id="svg3009"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="Neues Dokument 1">
+  <defs
+     id="defs3011" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.8901921"
+     inkscape:cx="59.75302"
+     inkscape:cy="40.820096"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1204"
+     inkscape:window-height="652"
+     inkscape:window-x="1024"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata3014">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-988.36218)">
+    <text
+       xml:space="preserve"
+       style="font-size:36.03872681px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="67.386993"
+       y="973.77368"
+       id="text2985"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenAP.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75"
+       transform="scale(0.94029176,1.0634997)"><tspan
+         sodipodi:role="line"
+         id="tspan2987"
+         x="67.386993"
+         y="973.77368">AP</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2.03540301;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 36.844311,1001.7748 -19.020168,33.1937 22.542418,0 z"
+       id="path2995"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenAP.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2.03540301;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 48.697801,1012.0068 -5.54955,29.3337"
+       id="path3001"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenAP.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000f8d;fill-opacity:0.0551181;fill-rule:nonzero;stroke:#000000;stroke-width:2.29005694;stroke-linecap:square;stroke-miterlimit:2.29999995;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path3003"
+       sodipodi:cx="51.964287"
+       sodipodi:cy="100.625"
+       sodipodi:rx="11.773661"
+       sodipodi:ry="10.386137"
+       d="M 55.923039,110.40643 A 11.773661,10.386137 0 1 1 51.991408,90.238891"
+       transform="matrix(-1.0110499,0,0,0.78133205,101.31077,942.11559)"
+       sodipodi:start="1.2278769"
+       sodipodi:end="4.7146925"
+       sodipodi:open="true"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenAP.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75" />
+  </g>
+</svg>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="360"
+   height="200"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="Gleichung2.svg"
+   inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelWiderstandDV.png"
+   inkscape:export-xdpi="75"
+   inkscape:export-ydpi="75">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path4065"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.3343291"
+     inkscape:cx="181.12866"
+     inkscape:cy="93.926799"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:window-width="1024"
+     inkscape:window-height="721"
+     inkscape:window-x="-2"
+     inkscape:window-y="-3"
+     inkscape:window-maximized="1"
+     inkscape:snap-grids="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3231" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-852.36218)">
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="67.44088"
+       y="964.06488"
+       id="text3794"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3796"
+         x="67.44088"
+         y="964.06488">=</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 256.51958,911.18432 -5.53571,28.39285"
+       id="path3001-1"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenDPg.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000f8d;fill-opacity:0.0551181;fill-rule:nonzero;stroke:#000000;stroke-width:2.29005694;stroke-linecap:square;stroke-miterlimit:2.29999995;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path3003-0"
+       sodipodi:cx="51.964287"
+       sodipodi:cy="100.625"
+       sodipodi:rx="11.773661"
+       sodipodi:ry="10.386137"
+       d="m 60.065696,108.16139 c -4.718279,3.94699 -12.170324,3.7725 -16.644609,-0.38973 -4.474284,-4.16223 -4.276488,-10.736054 0.441791,-14.683045 3.913465,-3.273739 9.848082,-3.783208 14.403637,-1.236509"
+       transform="matrix(-0.8052758,0,0,0.76597001,302.29377,841.74299)"
+       sodipodi:start="0.81193452"
+       sodipodi:end="5.2772305"
+       inkscape:export-filename="/var/run/media/build/0ED851F9D851E00F/Documents and Settings/Farschad/Documents/Trinkwasser/GrafischeSymbole/FormelZeichenDPg.png"
+       inkscape:export-xdpi="75"
+       inkscape:export-ydpi="75"
+       sodipodi:open="true" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2.50000000000000000;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 159.19438,951.69083 52.75566,0.484"
+       id="path3870"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:45.55153275px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="154.90834"
+       y="1033.5149"
+       id="text3897"
+       sodipodi:linespacing="125%"
+       transform="scale(1.038219,0.96318793)"><tspan
+         sodipodi:role="line"
+         id="tspan3899"
+         x="154.90834"
+         y="1033.5149"
+         style="font-style:italic;-inkscape-font-specification:Sans Italic">d</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="298.12646"
+       y="966.02521"
+       id="text4753"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4755"
+         x="298.12646"
+         y="966.02521">V</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot3155"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       transform="matrix(1.3362887,0,0,1.4701084,-34.934919,725.05072)"><flowRegion
+         id="flowRegion3157"><rect
+           id="rect3159"
+           width="41.125305"
+           height="50.121468"
+           x="37.698196"
+           y="127.60233" /></flowRegion><flowPara
+         id="flowPara3161"
+         style="font-style:italic;line-height:124.00000095%;letter-spacing:0.01px;-inkscape-font-specification:Sans Italic">R</flowPara></flowRoot>    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="193.20326"
+       y="1004.3826"
+       id="text3163"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3165"
+         x="193.20326"
+         y="1004.3826">i</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="173.49739"
+       y="937.55402"
+       id="text3167"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3169"
+         x="173.49739"
+         y="937.55402"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Sawasdee;-inkscape-font-specification:Sawasdee">1</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:2.5;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 226.79984,952.30563 52.75566,0.484"
+       id="path3870-5"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="242.84369"
+       y="994.97296"
+       id="text3167-6"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3169-7"
+         x="242.84369"
+         y="994.97296"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Sawasdee;-inkscape-font-specification:Sawasdee">2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.43531609px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="318.49664"
+       y="944.12183"
+       id="text3167-6-3"
+       sodipodi:linespacing="125%"
+       transform="scale(1.0142668,0.98593388)"><tspan
+         sodipodi:role="line"
+         id="tspan3169-7-1"
+         x="318.49664"
+         y="944.12183"
+         style="font-size:23.43531609px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Sawasdee;-inkscape-font-specification:Sawasdee">2</tspan></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:3.01799989;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 105.76487,979.16775 26.65797,-39.10048"
+       id="path3233"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans"
+       x="132.52597"
+       y="119.27275"
+       id="text3241"
+       sodipodi:linespacing="125%"
+       transform="translate(0,852.36218)"><tspan
+         sodipodi:role="line"
+         id="tspan3243"
+         x="132.52597"
+         y="119.27275" /></text>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:3.01804042;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 120.21888,929.64395 c 1.00562,-1.5244 1.28789,-3.35194 4.03755,-4.14547 3.27485,-0.50132 4.10495,0.26318 5.04695,1.57922 l 10.09395,47.96893 c 0.62283,1.69542 1.11508,3.46942 3.43193,4.14547 2.96344,0.0758 4.76317,-1.60727 6.25821,-3.75066"
+       id="path3245"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccc" />
+  </g>
+</svg>
