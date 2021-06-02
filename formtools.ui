@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>290</width>
-    <height>499</height>
+    <width>349</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,7 +23,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="5" column="4">
+      <item row="6" column="4">
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -36,7 +36,7 @@
         </property>
        </spacer>
       </item>
-      <item row="5" column="5">
+      <item row="6" column="5">
        <spacer name="horizontalSpacer_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -61,6 +61,9 @@
          <font>
           <pointsize>12</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Building with basement</string>
         </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
@@ -97,7 +100,7 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>2.400000000000000</double>
+         <double>2.500000000000000</double>
         </property>
        </widget>
       </item>
@@ -108,12 +111,15 @@
           <pointsize>12</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Count of floors</string>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="6">
+      <item row="5" column="0" colspan="6">
        <widget class="Line" name="line">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -145,13 +151,13 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="6">
+      <item row="7" column="0" colspan="6">
        <widget class="QSlider" name="scaleSlider">
         <property name="minimum">
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>15</number>
+         <number>17</number>
         </property>
         <property name="value">
          <number>8</number>
@@ -164,7 +170,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="2" colspan="2">
+      <item row="6" column="2" colspan="2">
        <spacer name="horizontalSpacer_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -177,7 +183,7 @@
         </property>
        </spacer>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="label_3">
         <property name="font">
          <font>
@@ -189,7 +195,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="6" column="1">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -214,8 +220,37 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="toolTip">
+         <string>Installing pipe's </string>
+        </property>
         <property name="text">
          <string>&amp;Install</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QPushButton" name="testInstallButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Test the pipe installation </string>
+        </property>
+        <property name="text">
+         <string>&amp;Test</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QPushButton" name="deletePipeButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Delete all pipe's</string>
+        </property>
+        <property name="text">
+         <string>&amp;Delete</string>
         </property>
        </widget>
       </item>
@@ -223,11 +258,11 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QTabWidget" name="tabWidgetObjects">
+    <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
-     <widget class="QWidget" name="tabWidgetObjectsPage1">
+     <widget class="QWidget" name="tabObjects">
       <attribute name="title">
        <string>Objects</string>
       </attribute>
@@ -236,6 +271,9 @@
         <widget class="QToolButton" name="wtButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Waschtisch</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -263,6 +301,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>WC mit Spülkasten</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -288,6 +329,9 @@
         <widget class="QToolButton" name="wcdsButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>WC mit Druckspüler</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -315,6 +359,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Dusche</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -340,6 +387,9 @@
         <widget class="QToolButton" name="waButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Badewanne</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -367,6 +417,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Urinalbecken</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -392,6 +445,9 @@
         <widget class="QToolButton" name="swButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Sitzwaschbecken, Bidet</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -419,6 +475,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Waschmaschine</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -444,6 +503,9 @@
         <widget class="QToolButton" name="gsButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Geschirrspülmaschine</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -471,6 +533,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Ausgußbecken mit Auslaufventil</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -496,6 +561,9 @@
         <widget class="QToolButton" name="spButton">
          <property name="enabled">
           <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Spülbecken</string>
          </property>
          <property name="text">
           <string>...</string>
@@ -523,6 +591,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Warmwasserspeicher, indirekt beheizt</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -549,6 +620,9 @@
          <property name="enabled">
           <bool>true</bool>
          </property>
+         <property name="toolTip">
+          <string>Durchlauferhitzer</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -572,6 +646,9 @@
        </item>
        <item row="2" column="3">
         <widget class="QToolButton" name="avButton">
+         <property name="toolTip">
+          <string>Auslaufventil</string>
+         </property>
          <property name="text">
           <string>...</string>
          </property>
@@ -607,12 +684,295 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="3">
+        <widget class="QToolButton" name="mainPipeButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Hauptwasseranschluss</string>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="images.qrc">
+           <normaloff>:/buttonicons/pipe.svg</normaloff>:/buttonicons/pipe.svg</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tabArmatur">
       <attribute name="title">
        <string>Valves</string>
       </attribute>
+      <widget class="QToolButton" name="abrvButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Absperrventil mit Rückflussverhinderer</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armABRV.svg</normaloff>:/valves/armABRV.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="gvButton">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>10</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Geradsitzventil</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armGV.svg</normaloff>:/valves/armGV.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="rvButton">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>60</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Rückflussverhinderer</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armRV.svg</normaloff>:/valves/armRV.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="svButton">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>10</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Absperrarmatur</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armSV.svg</normaloff>:/valves/armSV.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="dmButton">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>10</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Druckminderer</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armDM.svg</normaloff>:/valves/armDM.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="wzButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Wasserzähler</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armWZ.svg</normaloff>:/valves/armWZ.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="filButton">
+       <property name="geometry">
+        <rect>
+         <x>250</x>
+         <y>60</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Wasserfilter</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armFIL.svg</normaloff>:/valves/armFIL.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="fsveButton">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>60</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Sicherheitsventil, federbelastet</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armFSVE.svg</normaloff>:/valves/armFSVE.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="khButton">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>10</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Kugelhahn</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armKH.svg</normaloff>:/valves/armKH.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>31</width>
+         <height>40</height>
+        </size>
+       </property>
+      </widget>
+      <widget class="QToolButton" name="svteButton">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>60</y>
+         <width>51</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>Sichetheitsventil, Temperaturablassventil</string>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="images.qrc">
+         <normaloff>:/valves/armSVTE.svg</normaloff>:/valves/armSVTE.svg</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>37</width>
+         <height>39</height>
+        </size>
+       </property>
+      </widget>
      </widget>
     </widget>
    </item>

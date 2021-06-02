@@ -14,6 +14,7 @@
 #include <QTimer>
 
 #include <gbadobject.h>
+#include <garmatur.h>
 
 class GPipe : public QGraphicsObject
 {
@@ -38,6 +39,8 @@ public:
                        QWidget *widget) Q_DECL_OVERRIDE;
 
 
+    QRectF sceneRect();
+
     QColor color() const;
     void setColor(const QColor &color);
 
@@ -58,7 +61,7 @@ public:
 
 
     void appendGBadObject(GBadObject *o);
-    void deleteGBadObject(GBadObject *o);
+    bool deleteGBadObject(GBadObject *o);
     void setGBadObjectList(QList<GBadObject *> list);
     QList<GBadObject *> badObjectList();
     bool containsObjectType(const GBadObject::GBadObjectType &type);
@@ -74,15 +77,13 @@ public:
     int getNr() const;
     void setNr(int nr);
 
-//    int getStrangNr() const;
-//    void setStrangNr(int strangNr);
 
     QPointF getP1();
     QPointF getP2();
 
-    // Test
     QPointF getPipeEnd();
     QPointF getPipeStart();
+    QPointF getPipeMitte();
 
 
     int getFloorIndex() const;
@@ -107,6 +108,20 @@ public:
 
     QList<int> getObjectNrList() const;
     void setObjectNrList(const QList<int> &value);
+
+    QVariant region();
+
+    int getStrangMarkerNr() const;
+    void setStrangMarkerNr(int strangMarkerNr);
+
+    bool getShowNr() const;
+    void setShowNr(bool showNr);
+
+    QString getMaterial() const;
+    void setMaterial(const QString &material);
+
+    double getFlowSpeed() const;
+    void setFlowSpeed(double flowSpeed);
 
 public slots:
 
@@ -137,22 +152,24 @@ private:
     QPointF m_sPos;             // Position in scene
 
     int m_nr;
-    int m_strangNr;
+    int m_strangMarkerNr;
     double m_meter;
     bool m_activ;
     bool m_cold;
     bool m_circulation;
     double m_density;
     double m_length;
+    double m_flowSpeed;
     QColor m_color;
+    QString m_material;
 
-
-    // Test
     int m_floorIndex;
     QString m_flowDirection;
     bool m_showArrow;
     bool m_marker;
     bool m_readToConnect;
+    bool m_showNr;
+
     QTimer *timer;
     int m_blinkState;
 
@@ -166,6 +183,9 @@ private:
 
 
 };
+
+QDataStream & operator << (QDataStream& out, const GPipe& p);
+QDataStream & operator >> (QDataStream& in, GPipe& p);
 
 Q_DECLARE_METATYPE(GPipe *)
 Q_DECLARE_OPAQUE_POINTER(GPipe *)

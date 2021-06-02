@@ -106,15 +106,11 @@ public:
     bool getDauerlaeufer() const;
     void setDauerlaeufer(bool dauerlaeufer);
 
-    // Test
     QPointF connectCold();
     QPointF connectHot();
 
     QPointF mitte();
-    QRectF region();
-
-//    int getStrangNr() const;
-//    void setStrangNr(int strangNr);
+    QVariant region();
 
     int getPipeNr() const;
     void setPipeNr(int pipeNr);
@@ -130,6 +126,9 @@ public:
 
     bool displayNr() const;
     void setDisplayNr(bool displayNr);
+
+    QPointF leftPos();
+    QPointF rightPos();
 
 signals:
     void objectHasDeleted(GBadObject *obj);
@@ -175,12 +174,10 @@ private:
     QString m_fabrikat;         // Type, Manufakturing
 
 
-    bool m_displayNr;
+    bool m_displayNr;           // Status for showing the nr of object
 
-    // Test
-    int m_strangNr;
-    int m_pipeNr;
-    int m_nr;
+    int m_pipeNr;               // The nr of connecting pipe
+    int m_nr;                   // Object nr
 
 };
 

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui svg
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,15 +26,52 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        fsaquawindow.cpp
+        fsaquawindow.cpp \
+    formtools.cpp \
+    gbadobject.cpp \
+    gpipe.cpp \
+    scene.cpp \
+    formformularvs.cpp \
+    gbadobjectinfodialog.cpp \
+    gpipeinfodialog.cpp \
+    acceptwidget.cpp \
+    pipelistwidget.cpp \
+    simulationsllider.cpp \
+    en806.cpp \
+    garmatur.cpp \
+    garmaturinfodialog.cpp
 
 HEADERS += \
-        fsaquawindow.h
+        fsaquawindow.h \
+    formtools.h \
+    gbadobject.h \
+    gpipe.h \
+    scene.h \
+    formformularvs.h \
+    gbadobjectinfodialog.h \
+    gpipeinfodialog.h \
+    acceptwidget.h \
+    pipelistwidget.h \
+    simulationsllider.h \
+    en806.h \
+    garmatur.h \
+    garmaturinfodialog.h
 
 FORMS += \
-        fsaquawindow.ui
+        fsaquawindow.ui \
+    formtools.ui \
+    formformularvs.ui \
+    gbadobjectinfodialog.ui \
+    gpipeinfodialog.ui \
+    acceptwidget.ui \
+    pipelistwidget.ui \
+    simulationsllider.ui \
+    garmaturinfodialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    images.qrc

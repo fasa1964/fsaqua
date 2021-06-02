@@ -33,24 +33,33 @@ public:
 
     QString getFloorText(int index);
 
+    void enableArmaturButtons(bool status);
     void enableObjectButtons(bool status);
     void enableWSIBButton(bool status);
 
     bool getBasement() const;
     void setBasement(bool status);
 
-    void setInstallButtonEnable(bool status);
+    void enableInstallButton(bool status);
+    void enableDeletePipeButton(bool status);
+    void enableTestInstallButton(bool status);
+    void enableMainPipeButton(bool status);
 
-    // Test
-    void setBlinkButton(bool status);
+
+    void setBlinkButton(bool status, const QString &button);
 
 signals:
-    void objectSelcted(const QString &objectType);
+    void dropObjectSelcted(const QString &objectType);
+    void dropArmaturSelcted(const QString &armaturType);
     void setStrangMarker(const QString &strang);
     void floorCountChanged(int floors);
     void scaleChanged(int value);
     void floorHeightChanged(double value);
     void installButtonClicked();
+    void deletePipeButtonClicked();
+    void mainPipeButtonClicked();
+    void basementClicked(bool status);
+    void testInstallClicked();
 
 private slots:
     void on_wcButton_clicked(bool);
@@ -67,18 +76,36 @@ private slots:
     void on_dheButton_clicked(bool);
     void on_wsibButton_clicked(bool);
     void on_avButton_clicked(bool);
-
     void on_floorBox_valueChanged(int arg1);
     void on_scaleSlider_sliderMoved(int position);
 
     void on_highBox_valueChanged(double arg1);
     void on_basementBox_clicked(bool checked);
 
+
     // Pipe
     void on_strangButton_clicked(bool);
     void on_installButton_clicked(bool);
+    void on_mainPipeButton_clicked(bool);
+    void on_testInstallButton_clicked(bool checked);
+    void on_deletePipeButton_clicked(bool);
+
 
     void updateBlinkingButton();
+
+    // GArmatur
+    void on_abrvButton_clicked(bool);
+    void on_gvButton_clicked(bool);
+    void on_rvButton_clicked(bool);
+    void on_svButton_clicked(bool);
+    void on_dmButton_clicked(bool);
+    void on_wzButton_clicked(bool);
+    void on_filButton_clicked(bool);
+    void on_fsveButton_clicked(bool);
+    void on_khButton_clicked(bool);
+    void on_svteButton_clicked(bool);
+
+
 
 private:
     Ui::FormTools *ui;
@@ -91,6 +118,7 @@ private:
     int m_buttonState;
     QColor m_colorRed;
     QColor m_colorBlack;
+    QString buttonText;
 
 };
 

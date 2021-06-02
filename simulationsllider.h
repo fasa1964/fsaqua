@@ -15,6 +15,14 @@ public:
     explicit SimulationSllider(QWidget *parent = nullptr);
     ~SimulationSllider();
 
+    void setText(const QString &text, QColor color);
+
+signals:
+    void durationChanged(int value);
+
+private slots:
+    void on_durationSlider_valueChanged(int value);
+
 private:
     Ui::SimulationSllider *ui;
 };

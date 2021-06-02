@@ -7,7 +7,7 @@ GBadObjectInfoDialog::GBadObjectInfoDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowIcon(QIcon(QPixmap(":/icons/appIcon")));
-    setWindowTitle("Object info");
+    setWindowTitle(tr("Info Object"));
 }
 
 GBadObjectInfoDialog::~GBadObjectInfoDialog()

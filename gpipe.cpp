@@ -2,9 +2,10 @@
 
 #include <QPen>
 #include <QPainter>
+#include <QFont>
+#include <QFontMetrics>
 
 #include <scene.h>
-
 
 
 #include <QDebug>
@@ -65,6 +66,7 @@ GPipe::GPipe(GPipeType TYPE, bool COLD, double LENGTH, QGraphicsItem *parent) :
         m_color = QColor(238,130,238); // violet
     }
 
+
     QTransform trans;
     trans.rotate(180, Qt::YAxis);
     //trans.rotate(180, Qt::XAxis);
@@ -72,19 +74,21 @@ GPipe::GPipe(GPipeType TYPE, bool COLD, double LENGTH, QGraphicsItem *parent) :
 
     setAcceptDrops(true);
     setFlag(QGraphicsItem::ItemIsSelectable);
-    setFlag(QGraphicsItem::ItemIsMovable);
+    //setFlag(QGraphicsItem::ItemIsMovable);
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
+
 
     // Settings
     setActiv(false);
     setMarker(false);
     setShowArrow(false);
-    setStrangNr(0);
     setNr(0);
     setFloorIndex(0);
     setSelected(false);
-
+    setShowNr(false);
+    setMaterial("");
+    setFlowSpeed(2.0);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &GPipe::updateBlinkingColor);
@@ -124,6 +128,30 @@ void GPipe::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
         painter->drawPath(arrow());
     }
 
+    if(getShowNr()){
+         //= painter->fontMetrics();
+        QFont font = painter->font();
+        QFontMetrics fm(font);
+        int w = fm.width(QString("%1").arg( getNr()));
+        pen.setColor( Qt::blue );
+        pen.setWidthF(1);
+        painter->setPen( pen );
+
+        painter->rotate(180);
+        if(type() == GPipe::RGS)
+            painter->drawText(-30-w,-2,QString("%1").arg( getNr()) );
+        if(type() == GPipe::RGA && cold())
+            painter->drawText(2,-15,QString("%1").arg( getNr()) );
+        if(type() == GPipe::RGA && !cold())
+            painter->drawText(-2 - w, -15,QString("%1").arg( getNr()) );
+        if(type() == GPipe::STRANG && cold())
+            painter->drawText(-15,-length()/2,QString("%1").arg( getNr()) );
+        if(type() == GPipe::STRANG && !cold())
+            painter->drawText(15 - w, -length()/2 ,QString("%1").arg( getNr()) );
+
+        painter->rotate(180);
+    }
+
     // Test for showing p1 and p2
     pen.setColor( Qt::blue );
     pen.setWidthF(3);
@@ -136,8 +164,8 @@ void GPipe::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     painter->drawPoint(p2);
 
     if(isSelected()){
-        pen.setColor( Qt::blue );
-        pen.setWidthF(0.5);
+        pen.setColor( QColor(15,87,125) );
+        pen.setWidthF(1.0);
         painter->setPen( pen );
         painter->drawRect(rect);
     }
@@ -154,6 +182,12 @@ void GPipe::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     }
 }
 
+QRectF GPipe::sceneRect()
+{
+    return mapRectToScene(boundingRect());
+}
+
+
 QVariant GPipe::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
  {
 
@@ -166,6 +200,46 @@ QVariant GPipe::itemChange(QGraphicsItem::GraphicsItemChange change, const QVari
     return QGraphicsItem::itemChange(change, value);
 }
 
+double GPipe::getFlowSpeed() const
+{
+    return m_flowSpeed;
+}
+
+void GPipe::setFlowSpeed(double flowSpeed)
+{
+    m_flowSpeed = flowSpeed;
+}
+
+QString GPipe::getMaterial() const
+{
+    return m_material;
+}
+
+void GPipe::setMaterial(const QString &material)
+{
+    m_material = material;
+}
+
+bool GPipe::getShowNr() const
+{
+    return m_showNr;
+}
+
+void GPipe::setShowNr(bool showNr)
+{
+    m_showNr = showNr;
+}
+
+int GPipe::getStrangMarkerNr() const
+{
+    return m_strangMarkerNr;
+}
+
+void GPipe::setStrangMarkerNr(int strangMarkerNr)
+{
+    m_strangMarkerNr = strangMarkerNr;
+}
+
 QList<int> GPipe::getObjectNrList() const
 {
     return objectNrList;
@@ -174,6 +248,12 @@ QList<int> GPipe::getObjectNrList() const
 void GPipe::setObjectNrList(const QList<int> &value)
 {
     objectNrList = value;
+}
+
+QVariant GPipe::region()
+{
+    QRectF sr = mapRectToScene(rect.x(), rect.y(), rect.width(), rect.height());
+    return sr;
 }
 
 bool GPipe::getReadToConnect() const
@@ -192,11 +272,11 @@ void GPipe::setReadToConnect(bool readToConnect)
         if(timer != nullptr)
         {
             timer->stop();
-            //timer->deleteLater();
             if(cold())
                 setColor(Qt::darkGreen);
             if(!cold())
                 setColor(Qt::red);
+            update();
         }
     }
 
@@ -339,15 +419,6 @@ void GPipe::setFloorIndex(int floorIndex)
     m_floorIndex = floorIndex;
 }
 
-//int GPipe::getStrangNr() const
-//{
-//    return m_strangNr;
-//}
-
-//void GPipe::setStrangNr(int strangNr)
-//{
-//    m_strangNr = strangNr;
-//}
 
 QPointF GPipe::getP1()
 {
@@ -409,6 +480,11 @@ QPointF GPipe::getPipeStart()
     return mapToScene( pos );
 }
 
+QPointF GPipe::getPipeMitte()
+{
+    return mapToScene( rect.center() );
+}
+
 int GPipe::getNr() const
 {
     return m_nr;
@@ -452,14 +528,23 @@ void GPipe::setActiv(bool activ)
 
 void GPipe::appendGBadObject(GBadObject *o)
 {
-    objectList.append(o);
-    objectNrList << o->getNr();
+    // Only append when object not exist
+    if(!objectList.contains(o))
+        objectList.append(o);
+
+    if(!objectNrList.contains(o->getNr()))
+        objectNrList << o->getNr();
 }
 
-void GPipe::deleteGBadObject(GBadObject *o)
+bool GPipe::deleteGBadObject(GBadObject *o)
 {
-    objectList.removeOne(o);
-    objectNrList.removeOne(o->getNr());
+    if(objectList.removeOne(o)){
+        objectNrList.removeOne(o->getNr());
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 void GPipe::setGBadObjectList(QList<GBadObject *> list)
@@ -627,3 +712,55 @@ void GPipe::updateBlinkingColor()
     update();
 }
 
+
+QDataStream &operator <<(QDataStream &out, const GPipe &p)
+{
+    out << p.type() << p.scenePos() << p.getNr() << p.getStrangMarkerNr() << p.getMeter() << p.activ() <<
+           p.cold() << p.circulation() << p.density() << p.length() << p.color() << p.getMaterial() <<
+           p.getFloorIndex() << p.getFlowDirection() << p.getMarker() << p.getObjectNrList();
+
+    return out;
+}
+
+QDataStream &operator >>(QDataStream &in, GPipe &p)
+{
+    GPipe::GPipeType t;
+    QPointF sp;
+    int nr;
+    int strangNr;
+    double meter;
+    bool activ;
+    bool cold;
+    bool circ;
+    double density;
+    double len;
+    QColor col;
+    QString mat;
+    int findex;
+    QString direction;
+    bool marker;
+    QList<int> nrList;
+
+
+    in >> (quint32&)t >> sp >> nr >> strangNr >> meter >> activ >> cold >> circ >>
+          density >> len >> col >> mat >> findex >> direction >> marker >> nrList;
+
+    p.setSPos(sp);
+    p.setNr(nr);
+    p.setStrangMarkerNr(strangNr);
+    p.setMeter(meter);
+    p.setActiv(activ);
+    p.setCold(cold);
+    p.setCirculation(circ);
+    p.setDensity(density);
+    p.setLength(len);
+    p.setColor(col);
+    p.setMaterial(mat);
+    p.setFloorIndex(findex);
+    p.setFlowDirection(direction);
+    p.setMarker(marker);
+    p.setObjectNrList( nrList );
+
+    return in;
+
+}

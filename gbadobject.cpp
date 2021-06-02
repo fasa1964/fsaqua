@@ -368,13 +368,14 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
 
     setDauerlaeufer(false);
     setDisplayNr(false);
+    setPipeNr(0);
 
     setAcceptDrops(true);
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptedMouseButtons(Qt::LeftButton);
     setAcceptHoverEvents(true);
     setToolTip(bezeichnung());
-    setPipeNr(0);
+
 
     QTransform tr;
     tr.rotate(180, Qt::XAxis);
@@ -391,12 +392,16 @@ GBadObject::GBadObject(QGraphicsItem *parent) :
 GBadObject::GBadObject(const GBadObject &other, QGraphicsItem *parent) :
     QGraphicsObject (parent)
 {
+    //Type = other.type();
     rect = other.boundingRect();                    // bounding Rect
     svgItem = other.getSvgItem();                   // Grafisches Symbol svg
     m_symbolFilename = other.symbolFilename();      // path of image
     m_sPos = other.sPos();                          // Position in scene
 
     // Values for object
+    m_nr = other.getNr();
+    m_pipeNr = other.getPipeNr();
+
     m_din_bdKW = other.din_bdKW();                  // Berechnungsdurchfluss Kaltwasser nach DIN
     m_din_bdWW = other.din_bdWW();                  // Berechnungsdurchfluss Warmwasser nach DIN
     m_din_md = other.din_md();                      // Mindestfließdruck nach DIN
@@ -415,6 +420,9 @@ GBadObject::GBadObject(const GBadObject &other, QGraphicsItem *parent) :
     m_fabrikat = other.fabrikat();                  // Type, Manufakturing
     m_dauerlaeufer = other.getDauerlaeufer();
     m_floorIndex = other.getFloorIndex();
+
+    m_cold = other.getCold();
+    m_hot = other.getHot();
 }
 
 QRectF GBadObject::boundingRect() const
@@ -429,7 +437,7 @@ void GBadObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 
     QPen pen;
     pen.setColor(Qt::blue);
-    pen.setWidthF(0.5);
+    pen.setWidthF(1.0);
     painter->setPen(pen);
 
     if(isSelected())
@@ -445,21 +453,6 @@ void GBadObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
 
         painter->drawText(5,rect.height()-2, QString("%1").arg(getNr()));
     }
-
-
-//    if(getCold()){
-//        pen.setColor(Qt::darkGreen);
-//        pen.setWidthF(5);
-//        painter->setPen(pen);
-//        painter->drawPoint(connectCold());
-//    }
-
-//    if(getHot()){
-//        pen.setColor(Qt::red);
-//        pen.setWidthF(5);
-//        painter->setPen(pen);
-//        painter->drawPoint(connectHot());
-//    }
 }
 
 QString GBadObject::bezeichnung() const
@@ -628,6 +621,16 @@ void GBadObject::setDisplayNr(bool displayNr)
     m_displayNr = displayNr;
 }
 
+QPointF GBadObject::leftPos()
+{
+    return mapToScene( boundingRect().bottomLeft() );
+}
+
+QPointF GBadObject::rightPos()
+{
+    return mapToScene( boundingRect().bottomRight() );
+}
+
 int GBadObject::getNr() const
 {
     return m_nr;
@@ -667,16 +670,6 @@ void GBadObject::setPipeNr(int pipeNr)
 {
     m_pipeNr = pipeNr;
 }
-
-//int GBadObject::getStrangNr() const
-//{
-//    return m_strangNr;
-//}
-
-//void GBadObject::setStrangNr(int strangNr)
-//{
-//    m_strangNr = strangNr;
-//}
 
 bool GBadObject::getDauerlaeufer() const
 {
@@ -740,7 +733,7 @@ QPointF GBadObject::mitte()
     return pos;
 }
 
-QRectF GBadObject::region()
+QVariant GBadObject::region()
 {
     QRectF sr = mapRectToScene(rect.x(), rect.y(), rect.width(), rect.height());
     return sr;
@@ -778,10 +771,12 @@ void GBadObject::infoAction()
 
 QDataStream & operator << (QDataStream& out, const GBadObject& obj)
 {
+    GBadObject::GBadObjectType t;
+    (quint32&) t = obj.type();
 
-    out << obj.type() <<  obj.bezeichnung() << obj.fabrikat() << obj.sPos() << obj.lu() <<
+    out << t << obj.getNr() << obj.bezeichnung() << obj.fabrikat() << obj.scenePos() << obj.lu() <<
            obj.bdKW() << obj.bdWW() << obj.md() << obj.kwh() << obj.dn() << obj.getDauerlaeufer() <<
-           obj.getFloorIndex();
+           obj.getFloorIndex() << obj.dn() << obj.getCold() << obj.getHot() << obj.getPipeNr();
 
     return out;
 }
@@ -789,6 +784,7 @@ QDataStream & operator << (QDataStream& out, const GBadObject& obj)
 QDataStream & operator >> (QDataStream& in, GBadObject& obj)
 {
     GBadObject::GBadObjectType t;
+    int nr;
     QString bez;
     QString fab;
     QPointF sp;
@@ -797,10 +793,17 @@ QDataStream & operator >> (QDataStream& in, GBadObject& obj)
     double ww;
     int md;
     double kwh;
+    int dn;
+    bool cold;
+    bool hot;
+    int pnr;
 
-    in >> (quint32&)t >> bez >> fab >> sp >> lu >> kw >> ww >> md >> kwh;
+
+    in >> (quint32&)t >> nr >> bez >> fab >> sp >> lu >> kw >> ww >> md >> kwh >> dn >> cold >> hot >> pnr;
+
 
     obj.setBezeichnung(bez);
+    obj.setNr(nr);
     obj.setFabrikat(fab);
     obj.setSPos(sp);
     obj.setLu(lu);
@@ -808,6 +811,10 @@ QDataStream & operator >> (QDataStream& in, GBadObject& obj)
     obj.setBdWW(ww);
     obj.setMd(md);
     obj.setKwh(kwh);
+    obj.setDn(dn);
+    obj.setCold(cold);
+    obj.setHot(hot);
+    obj.setPipeNr(pnr);
 
     return in;
 }
