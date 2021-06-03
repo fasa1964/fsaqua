@@ -68,10 +68,15 @@ FORMS += \
     simulationsllider.ui \
     garmaturinfodialog.ui
 
+TRANSLATIONS += aqua_de.ts
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    images.qrc
+    images.qrc \
+    translations.qrc
+
+DISTFILES +=

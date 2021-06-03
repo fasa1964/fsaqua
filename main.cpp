@@ -1,6 +1,7 @@
 #include "fsaquawindow.h"
 #include <QApplication>
-
+#include <QTranslator>
+#include <QLocale>
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -33,6 +34,11 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(myMessageOutput);
 
     QApplication app(argc, argv);
+
+    QTranslator trans;
+    if (trans.load(QLocale(), QLatin1String("aqua"), QLatin1String("_"), QLatin1String(":/")))
+              app.installTranslator(&trans);
+
 
     QApplication::setApplicationName("AQua");
     QApplication::setApplicationVersion("2.0");

@@ -44,6 +44,7 @@ public:
     void enableDeletePipeButton(bool status);
     void enableTestInstallButton(bool status);
     void enableMainPipeButton(bool status);
+    void enableCalculateButton(bool status);
 
 
     void setBlinkButton(bool status, const QString &button);
@@ -60,6 +61,7 @@ signals:
     void mainPipeButtonClicked();
     void basementClicked(bool status);
     void testInstallClicked();
+    void calculatePipeClicked();
 
 private slots:
     void on_wcButton_clicked(bool);
@@ -106,6 +108,7 @@ private slots:
     void on_svteButton_clicked(bool);
 
 
+    void on_calculateButton_clicked(bool);
 
 private:
     Ui::FormTools *ui;

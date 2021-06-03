@@ -247,6 +247,11 @@ void FormTools::enableMainPipeButton(bool status)
     ui->mainPipeButton->setEnabled(status);
 }
 
+void FormTools::enableCalculateButton(bool status)
+{
+    ui->calculateButton->setEnabled(status);
+}
+
 void FormTools::setBlinkButton(bool status, const QString &button)
 {
     buttonText = button;
@@ -351,4 +356,9 @@ void FormTools::on_svteButton_clicked(bool /*checked*/)
 void FormTools::on_deletePipeButton_clicked(bool /*checked*/)
 {
     emit deletePipeButtonClicked();
+}
+
+void FormTools::on_calculateButton_clicked(bool /*checked*/)
+{
+    emit calculatePipeClicked();
 }

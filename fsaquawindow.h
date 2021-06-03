@@ -186,6 +186,7 @@ private slots:
     void mainPipeButtonClicked();
     void basementButtonClicked(bool status);
     void testInstallation();
+    void calculateInstallation();
 
     // Scene
     void leftMouseButtonClicked(QPointF mpos);
@@ -239,6 +240,7 @@ private:
     bool pipeInstalled;
     bool dropMainPipe;
     bool pipeTested;
+    bool statusLoading;
     QMap<int, double> scaleMap;
     QMap<QString, QString> pipeMaterial;
 

@@ -46,6 +46,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     dropMainPipe = false;
     forwardConnecting = true;
     pipeTested = false;
+    statusLoading = false;
 
     selectedObject = nullptr;
     selectedMarker = nullptr;
@@ -127,6 +128,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     connect(tools, &FormTools::mainPipeButtonClicked, this, &FSAquaWindow::mainPipeButtonClicked);
     connect(tools, &FormTools::basementClicked, this, &FSAquaWindow::basementButtonClicked);
     connect(tools, &FormTools::testInstallClicked, this, &FSAquaWindow::testInstallation);
+    connect(tools, &FormTools::calculatePipeClicked, this, &FSAquaWindow::calculateInstallation);
 
 
     // Scene
@@ -300,7 +302,7 @@ void FSAquaWindow::scrollBarMoved(int)
 
 void FSAquaWindow::on_spitzendurchflussBox_valueChanged(double)
 {
-    if(pipeTested){
+    if(pipeTested && !statusLoading){
         pipeTested = false;
         tools->setBlinkButton(true, "test");
     }
@@ -417,8 +419,8 @@ void FSAquaWindow::actionLoadProject()
     }
     else
     {
-
-        setCursor(Qt::IBeamCursor);
+        statusLoading = true;
+        setCursor(Qt::WaitCursor);
 
         clearScene();
         QDataStream in(&file);
@@ -673,6 +675,9 @@ void FSAquaWindow::actionLoadProject()
 
             }
         }
+
+        setCursor(Qt::ArrowCursor);
+        statusLoading = false;
     }
 
 }
@@ -932,7 +937,9 @@ void FSAquaWindow::deletePipeButtonClicked()
 
     tools->enableDeletePipeButton(false);
     tools->enableArmaturButtons(false);
+    tools->enableTestInstallButton(false);
     pipeInstalled = false;
+    scene->update();
 }
 
 void FSAquaWindow::mainPipeButtonClicked()
@@ -1113,6 +1120,11 @@ void FSAquaWindow::testInstallation()
     simulationRect->hide();
     pipeTested = true;
     tools->setBlinkButton(false, "test");
+}
+
+void FSAquaWindow::calculateInstallation()
+{
+
 }
 
 void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
