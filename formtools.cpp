@@ -20,6 +20,8 @@ FormTools::FormTools(QWidget *parent) :
     m_colorBlack = ui->installButton->palette().background().color();
     m_colorRed = Qt::red;
 
+
+
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &FormTools::updateBlinkingButton);
 }
@@ -260,9 +262,20 @@ void FormTools::setBlinkButton(bool status, const QString &button)
        timer->start(1000);
     else{
         timer->stop();
-        QPalette pal = ui->installButton->palette();
-        pal.setColor(QPalette::Button, m_colorBlack);
-        ui->installButton->setPalette(pal);
+        if(button == "install"){
+            QPalette pal = ui->installButton->palette();
+            pal.setColor(QPalette::Button, m_colorBlack);
+            ui->installButton->setPalette(pal);
+            ui->installButton->update();
+        }
+        if(button == "test"){
+            QPalette pal = ui->testInstallButton->palette();
+            pal.setColor(QPalette::Button, m_colorBlack);
+            ui->testInstallButton->setPalette(pal);
+            ui->testInstallButton->update();
+        }
+
+
         update();
     }
 }

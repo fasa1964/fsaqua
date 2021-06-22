@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>930</width>
     <height>571</height>
    </rect>
   </property>
@@ -39,19 +39,6 @@
        <item row="2" column="8">
         <widget class="QComboBox" name="dinBox"/>
        </item>
-       <item row="1" column="11">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="2" column="6" colspan="2">
         <widget class="QLabel" name="label_6">
          <property name="text">
@@ -66,13 +53,27 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="8" colspan="3">
-        <widget class="QLineEdit" name="customNameEdit"/>
+       <item row="1" column="14">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="0" column="6" colspan="2">
-        <widget class="QLabel" name="label_5">
+       <item row="2" column="4">
+        <widget class="QToolButton" name="formularFlowButton">
          <property name="text">
-          <string>Kunde:</string>
+          <string>...</string>
+         </property>
+         <property name="icon">
+          <iconset resource="images.qrc">
+           <normaloff>:/buttonicons/info.svg</normaloff>:/buttonicons/info.svg</iconset>
          </property>
         </widget>
        </item>
@@ -89,22 +90,8 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="2" colspan="2">
-        <widget class="QComboBox" name="buildingBox"/>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Summendurchfluss:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="6" colspan="2">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Belastungswert:</string>
-         </property>
-        </widget>
+       <item row="0" column="8" colspan="6">
+        <widget class="QLineEdit" name="customNameEdit"/>
        </item>
        <item row="2" column="1">
         <widget class="QDoubleSpinBox" name="spitzendurchflussBox">
@@ -162,13 +149,70 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1" colspan="3">
-        <widget class="QLineEdit" name="projectNameEdit"/>
+       <item row="0" column="6" colspan="2">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Kunde:</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Spitzendurchfluss:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QDoubleSpinBox" name="summePWCBox">
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>170</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>0</red>
+               <green>170</green>
+               <blue>0</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Text">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>119</red>
+               <green>120</green>
+               <blue>120</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="buttonSymbols">
+          <enum>QAbstractSpinBox::NoButtons</enum>
+         </property>
+         <property name="prefix">
+          <string>PWC </string>
+         </property>
+         <property name="maximum">
+          <double>999.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -194,27 +238,31 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="10">
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Summendurchfluss:</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>112</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
-       <item row="1" column="10">
-        <spacer name="horizontalSpacer_2">
+       <item row="1" column="4">
+        <widget class="QToolButton" name="placeHolder2Button">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2" colspan="2">
+        <widget class="QComboBox" name="buildingBox"/>
+       </item>
+       <item row="0" column="14">
+        <spacer name="horizontalSpacer_6">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>112</width>
+           <width>40</width>
            <height>20</height>
           </size>
          </property>
@@ -273,79 +321,6 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QDoubleSpinBox" name="summePWCBox">
-         <property name="palette">
-          <palette>
-           <active>
-            <colorrole role="Text">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>0</red>
-               <green>170</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </active>
-           <inactive>
-            <colorrole role="Text">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>0</red>
-               <green>170</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </inactive>
-           <disabled>
-            <colorrole role="Text">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>119</red>
-               <green>120</green>
-               <blue>120</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </disabled>
-          </palette>
-         </property>
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-         <property name="buttonSymbols">
-          <enum>QAbstractSpinBox::NoButtons</enum>
-         </property>
-         <property name="prefix">
-          <string>PWC </string>
-         </property>
-         <property name="maximum">
-          <double>999.000000000000000</double>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="11">
-        <spacer name="horizontalSpacer_6">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="1" column="4">
-        <widget class="QToolButton" name="placeHolder2Button">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="4">
         <widget class="QToolButton" name="placeHolder1Button">
          <property name="text">
@@ -353,16 +328,54 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="4">
-        <widget class="QToolButton" name="formularFlowButton">
+       <item row="1" column="6" colspan="2">
+        <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>...</string>
-         </property>
-         <property name="icon">
-          <iconset resource="images.qrc">
-           <normaloff>:/buttonicons/info.svg</normaloff>:/buttonicons/info.svg</iconset>
+          <string>Belastungswert:</string>
          </property>
         </widget>
+       </item>
+       <item row="0" column="1" colspan="3">
+        <widget class="QLineEdit" name="projectNameEdit"/>
+       </item>
+       <item row="1" column="13">
+        <widget class="QSpinBox" name="mvdBox">
+         <property name="toolTip">
+          <string>Der Mindestversorgungsdruck am Hausanschluss</string>
+         </property>
+         <property name="suffix">
+          <string> hPa</string>
+         </property>
+         <property name="prefix">
+          <string/>
+         </property>
+         <property name="maximum">
+          <number>99999</number>
+         </property>
+         <property name="value">
+          <number>4500</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="11">
+        <widget class="QLabel" name="label_7">
+         <property name="text">
+          <string>MVD:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="10" colspan="4">
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>112</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -377,7 +390,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>930</width>
      <height>22</height>
     </rect>
    </property>
@@ -401,6 +414,7 @@
     <addaction name="actionLoadProject"/>
     <addaction name="actionSaveProject"/>
     <addaction name="actionNewProject"/>
+    <addaction name="actionDeleteProject"/>
    </widget>
    <widget class="QMenu" name="menuEditoe">
     <property name="title">
@@ -581,6 +595,14 @@
    </property>
    <property name="text">
     <string>Show armatur status</string>
+   </property>
+  </action>
+  <action name="actionDeleteProject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Delete</string>
    </property>
   </action>
  </widget>

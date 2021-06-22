@@ -7,6 +7,7 @@
 #include <QGraphicsTextItem>
 #include <QGraphicsSvgItem>
 #include <QPainterPath>
+#include <QPair>
 
 #include <QMenu>
 #include <QAction>
@@ -66,6 +67,11 @@ public:
     QList<GBadObject *> badObjectList();
     bool containsObjectType(const GBadObject::GBadObjectType &type);
 
+    void insertFlow(int nr, double cold, double hot);
+    QMap<int, QPair<double, double>> getObjectFlowMap();
+    void setObjectFlowMap(QMap<int, QPair<double, double>> map);
+    double getFlow();
+
     QString getTypeString();
 
     double getMeter() const;
@@ -123,6 +129,12 @@ public:
     double getFlowSpeed() const;
     void setFlowSpeed(double flowSpeed);
 
+    double getTotalResistance() const;
+    void setTotalResistance(double totalResistance);
+
+    int getDn() const;
+    void setDn(int dn);
+
 public slots:
 
     // for contex menu
@@ -153,13 +165,15 @@ private:
 
     int m_nr;
     int m_strangMarkerNr;
+    int m_dn;
     double m_meter;
     bool m_activ;
     bool m_cold;
     bool m_circulation;
-    double m_density;
+    double m_density;           // in kg/qm
     double m_length;
     double m_flowSpeed;
+    double m_totalResistance;
     QColor m_color;
     QString m_material;
 
@@ -178,6 +192,9 @@ private:
 
     QList<GBadObject *> objectList;
     QList<int> objectNrList;
+
+    // Testing flow map for better result
+    QMap<int, QPair<double, double>> objectFlowMap;
 
     QPainterPath arrow();
 

@@ -16,6 +16,9 @@ public:
     explicit GArmaturInfoDialog(GArmatur *arm, QWidget *parent = nullptr);
     ~GArmaturInfoDialog();
 
+signals:
+    void armaturDNChanged(GArmatur *valve);
+
 private slots:
     void on_okButton_clicked(bool);
     void on_cancelButton_clicked(bool);

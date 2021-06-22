@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>421</width>
-    <height>383</height>
+    <width>417</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
      </property>
     </spacer>
    </item>
-   <item row="8" column="0" colspan="5">
+   <item row="9" column="0" colspan="5">
     <widget class="QFrame" name="frame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -94,7 +94,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0" colspan="5">
+   <item row="8" column="0" colspan="5">
     <widget class="QTableWidget" name="objectsTable"/>
    </item>
    <item row="1" column="3">
@@ -169,6 +169,9 @@
    </item>
    <item row="3" column="1">
     <widget class="QDoubleSpinBox" name="meterBox">
+     <property name="toolTip">
+      <string>Length of pipe</string>
+     </property>
      <property name="suffix">
       <string> m</string>
      </property>
@@ -177,7 +180,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="7" column="2">
     <spacer name="horizontalSpacer_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -190,14 +193,14 @@
      </property>
     </spacer>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="7" column="0" colspan="2">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Connected object's:</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="4">
+   <item row="7" column="4">
     <spacer name="horizontalSpacer_8">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -210,7 +213,7 @@
      </property>
     </spacer>
    </item>
-   <item row="6" column="3">
+   <item row="7" column="3">
     <spacer name="horizontalSpacer_7">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -238,6 +241,9 @@
    </item>
    <item row="1" column="1">
     <widget class="QSpinBox" name="nrBox">
+     <property name="toolTip">
+      <string>Pipe nr</string>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -264,6 +270,49 @@
    </item>
    <item row="2" column="1">
     <widget class="QSpinBox" name="dnBox">
+     <property name="palette">
+      <palette>
+       <active>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>0</red>
+           <green>85</green>
+           <blue>127</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>0</red>
+           <green>85</green>
+           <blue>127</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>119</red>
+           <green>120</green>
+           <blue>120</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -282,10 +331,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QComboBox" name="materialBox"/>
-   </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="label_8">
      <property name="text">
       <string>Material:</string>
@@ -323,22 +369,119 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="3">
+   <item row="5" column="3">
     <widget class="QLabel" name="label_9">
      <property name="text">
       <string>Flowspeed:</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="4">
+   <item row="5" column="4">
     <widget class="QDoubleSpinBox" name="flowSpeedBox">
+     <property name="toolTip">
+      <string>Flowspeed of fluid</string>
+     </property>
      <property name="suffix">
       <string> m/s</string>
      </property>
     </widget>
    </item>
+   <item row="4" column="3">
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>Peakflow:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4">
+    <widget class="QDoubleSpinBox" name="peakFlowBox">
+     <property name="palette">
+      <palette>
+       <active>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>0</red>
+           <green>85</green>
+           <blue>127</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>0</red>
+           <green>85</green>
+           <blue>127</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="Text">
+         <brush brushstyle="SolidPattern">
+          <color alpha="255">
+           <red>119</red>
+           <green>120</green>
+           <blue>120</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="buttonSymbols">
+      <enum>QAbstractSpinBox::NoButtons</enum>
+     </property>
+     <property name="suffix">
+      <string> l/s</string>
+     </property>
+     <property name="maximum">
+      <double>999.990000000000009</double>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="materialBox"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="maximumSize">
+      <size>
+       <width>55</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="images.qrc">:/formeln/DVEinzelwiderstaende.svg</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QDoubleSpinBox" name="pressureLossResistanceBox">
+     <property name="toolTip">
+      <string>Pressure loss  total resistance in %</string>
+     </property>
+     <property name="suffix">
+      <string> %</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>

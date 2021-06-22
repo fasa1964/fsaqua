@@ -7,7 +7,6 @@ FormFormularVs::FormFormularVs(QWidget *parent) :
 {
     ui->setupUi(this);
     setWindowTitle(tr("Formel Spitzendurchfluss"));
-    setWindowFlag(Qt::Popup);
 
 }
 

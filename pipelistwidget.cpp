@@ -1,15 +1,16 @@
 #include "pipelistwidget.h"
 #include "ui_pipelistwidget.h"
 
-
+#include <QDebug>
 
 PipeListWidget::PipeListWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PipeListWidget)
 {
     ui->setupUi(this);
-    setWindowTitle("Teilstrecken Infos");
+    setWindowTitle(tr("Sectionpipe info"));
     setupTableWidget();
+    ui->tableWidget->setSortingEnabled(false);
 
     connect(ui->tableWidget, &QTableWidget::cellClicked, this, &PipeListWidget::cellClicked);
 }
@@ -38,8 +39,9 @@ void PipeListWidget::insertRow(const QList<GPipe *> &list, int nr, bool ok)
     QTableWidgetItem *itemNr = new QTableWidgetItem(QString("%1").arg(nr));
     QTableWidgetItem *itemConnect = new QTableWidgetItem(cs);
     QTableWidgetItem *itemLength = new QTableWidgetItem(QString("%1 m").arg(lenght));
-    QTableWidgetItem *itemFlow = new QTableWidgetItem("");
-    QTableWidgetItem *itemLu = new QTableWidgetItem("");
+    QTableWidgetItem *itemGeo = new QTableWidgetItem("");
+    QTableWidgetItem *itemPmin = new QTableWidgetItem("");
+    QTableWidgetItem *itemdPap = new QTableWidgetItem("");
 
 
     if(ok)
@@ -53,10 +55,9 @@ void PipeListWidget::insertRow(const QList<GPipe *> &list, int nr, bool ok)
     ui->tableWidget->setItem(row,0,itemNr);
     ui->tableWidget->setItem(row,1,itemConnect);
     ui->tableWidget->setItem(row,2,itemLength);
-    ui->tableWidget->setItem(row,3,itemFlow);
-    ui->tableWidget->setItem(row,4,itemLu);
-
-
+    ui->tableWidget->setItem(row,3,itemGeo);
+    ui->tableWidget->setItem(row,4,itemPmin);
+    ui->tableWidget->setItem(row,5,itemdPap);
 
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->update();
@@ -89,84 +90,76 @@ void PipeListWidget::setText(int row, int column, const QString &text)
     ui->tableWidget->update();
 }
 
-void PipeListWidget::setFlow(int row, int column, double value)
+void PipeListWidget::setValue(int sectionPipeNr, int column, double value, const QString &einheit)
 {
-    QTableWidgetItem *item = ui->tableWidget->item(row, column);
-    if(item != nullptr)
-    {
-        item->setBackground(Qt::green);
-        item->setText(QString("%1 l/s").arg(value));
-        ui->tableWidget->resizeColumnsToContents();
-        ui->tableWidget->update();
-    }
-}
 
-void PipeListWidget::setLu(int row, int column, int value)
-{
-    QTableWidgetItem *item = ui->tableWidget->item(row, column);
-    if(item != nullptr)
+    QString nrs = QString("%1").arg(sectionPipeNr);
+    for(int i = 0; i < ui->tableWidget->rowCount(); i++)
     {
-        item->setBackground(Qt::green);
-        item->setText(QString("%1").arg(value));
-        ui->tableWidget->resizeColumnsToContents();
-        ui->tableWidget->update();
-    }
-}
-
-// Testing for saving and loading the project
-QMap<QString, QVariant> PipeListWidget::getPipeSectionInfos()
-{
-    QMap<QString, QVariant> map;
-    for (int r = 0; r < ui->tableWidget->rowCount(); r++)
-    {
-        QStringList textList;
-        for(int c = 0; c < ui->tableWidget->columnCount(); c++)
+        QTableWidgetItem *item = ui->tableWidget->item(i, 0);
+        if(item != nullptr)
         {
-            QString text = ui->tableWidget->item(r,c)->text();
-            textList << text;
-        }
-
-        map.insert( QString("%1").arg(r), textList);
-    }
-
-    return map;
-}
-
-void PipeListWidget::setPipeSectionInfos(QMap<int, QStringList> map)
-{
-
-}
-
-void PipeListWidget::cellClicked(int row, int /*column*/)
-{
-
-    QMapIterator<int, QList<GPipe *>> it(pipeMap);
-    while (it.hasNext()) {
-        it.next();
-
-        if(it.key() != row){
-            foreach(GPipe *p, pipeMap.value(it.key()) ){
-                if(p->cold())
-                    p->setColor(Qt::darkGreen);
-                else
-                    p->setColor(Qt::red);
-                p->update();
+            if(item->text() == nrs)
+            {
+                QTableWidgetItem *itemValue = ui->tableWidget->item(i, column);
+                if(itemValue != nullptr)
+                {
+                    itemValue->setText(QString("%1 ").arg(value)+einheit);
+                    ui->tableWidget->resizeColumnsToContents();
+                    ui->tableWidget->update();
+                }
             }
         }
     }
 
-    foreach(GPipe *p, pipeMap.value(row) ){
-        p->setColor(Qt::cyan);
-        p->update();
-    }
+
+//    QTableWidgetItem *item = ui->tableWidget->item(row, column);
+//    if(item != nullptr)
+//    {
+//        item->setText(QString("%1 ").arg(value)+einheit);
+//        ui->tableWidget->resizeColumnsToContents();
+//        ui->tableWidget->update();
+//    }
+}
+
+
+// Testing for saving and loading the project
+//QMap<QString, QVariant> PipeListWidget::getPipeSectionInfos()
+//{
+//    QMap<QString, QVariant> map;
+//    for (int r = 0; r < ui->tableWidget->rowCount(); r++)
+//    {
+//        QStringList textList;
+//        for(int c = 0; c < ui->tableWidget->columnCount(); c++)
+//        {
+//            QString text = ui->tableWidget->item(r,c)->text();
+//            textList << text;
+//        }
+
+//        map.insert( QString("%1").arg(r), textList);
+//    }
+
+//    return map;
+//}
+
+//void PipeListWidget::setPipeSectionInfos(QMap<int, QStringList> map)
+//{
+
+//}
+
+void PipeListWidget::cellClicked(int row, int column)
+{
+    bool ok;
+    int nr = ui->tableWidget->item(row, 0)->text().toInt(&ok);
+    emit rowSelect(nr, column);
 }
 
 void PipeListWidget::setupTableWidget()
 {
-    ui->tableWidget->setColumnCount(5);
+    ui->tableWidget->setColumnCount(6);
 
     QStringList header;
-    header << "Nr" << "Connection" << "Length" << "Flow" << "LU";
+    header << "Nr" << "Connection" << "Length" << "dP(geo)" << "PminFl" << "dP(ap)";
 
     ui->tableWidget->setHorizontalHeaderLabels(header);
     ui->tableWidget->resizeColumnsToContents();

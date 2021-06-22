@@ -16,17 +16,32 @@ GArmaturInfoDialog::GArmaturInfoDialog(GArmatur *arm, QWidget *parent) :
 
     currentArmatur = arm;
     armaturDN = currentArmatur->dn();
+    GArmatur::GArmaturType type;
+    (quint32&) type = currentArmatur->type();
+    double zeta = FSAquaWindow::zeta( type,  currentArmatur->dn() );
 
-    ui->pressureLossBox->setValue( currentArmatur->getPessureLoss() );
-
-    ui->dnBox->setValue(currentArmatur->dn());
+    // Main Values
+    ui->aramturLabel->setText( arm->name() );
+    ui->dnBox->setValue( currentArmatur->dn() );
     ui->dnBox->setMaximum( FSAquaWindow::dnList().last());
     ui->dnBox->setMinimum( FSAquaWindow::dnList().first());
-
-    ui->dichteBox->setValue( currentArmatur->dichte());
-    ui->flowVelocityBox->setValue( currentArmatur->flowSpeed());
+    ui->entleerungBox->setChecked( currentArmatur->getEntleerung());
+    ui->zetaBox->setValue( zeta );
+    //ui->pressureLossBox->setValue( currentArmatur->getPessureLoss() );
     ui->vsBox->setValue( currentArmatur->getPeakFlow() );
+
+    // show this label when diameter was setting by din table
+    ui->labelDN->hide();
+
+    // Drag Coefficient
+    ui->flowVelocityBox->setValue( currentArmatur->flowSpeed());
+    ui->zetaBox2->setValue( zeta );
+    ui->dichteBox->setValue( currentArmatur->dichte());
+
+    // Operating Point
     ui->vsBox2->setValue( currentArmatur->getPeakFlow() );
+    ui->vgBox->setValue( currentArmatur->vg() );
+    ui->pgBox->setValue( currentArmatur->pg() );
 
     double hPa = currentArmatur->getPessureLoss();
     ui->pressureLossBox->setValue( hPa );
@@ -37,15 +52,6 @@ GArmaturInfoDialog::GArmaturInfoDialog(GArmatur *arm, QWidget *parent) :
         ui->pAPBox->setValue( hPa );
 
 
-
-    GArmatur::GArmaturType type;
-    (quint32&) type = currentArmatur->type();
-    double zeta = FSAquaWindow::zeta( type,  currentArmatur->dn() );
-
-    ui->zetaBox->setValue( zeta );
-    ui->zetaBox2->setValue( zeta );
-    ui->aramturLabel->setText( arm->name() );
-    ui->entleerungBox->setChecked( currentArmatur->getEntleerung());
 }
 
 GArmaturInfoDialog::~GArmaturInfoDialog()
@@ -55,6 +61,10 @@ GArmaturInfoDialog::~GArmaturInfoDialog()
 
 void GArmaturInfoDialog::on_okButton_clicked(bool /*checked*/)
 {
+    bool dnChanged = false;
+    if(currentArmatur->dn() != ui->dnBox->value())
+        dnChanged = true;
+
     currentArmatur->setDn( ui->dnBox->value() );
     currentArmatur->setPessureLoss( ui->pressureLossBox->value() );
     currentArmatur->setEntleerung( ui->entleerungBox->isChecked() );
@@ -68,6 +78,10 @@ void GArmaturInfoDialog::on_okButton_clicked(bool /*checked*/)
     currentArmatur->update();
 
     close();
+
+    if(dnChanged)
+        emit armaturDNChanged(currentArmatur);
+
 }
 
 void GArmaturInfoDialog::on_cancelButton_clicked(bool /*checked*/)

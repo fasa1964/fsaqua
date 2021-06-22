@@ -2,7 +2,8 @@
 #define GPIPEINFODIALOG_H
 
 #include <QDialog>
-
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 #include <gpipe.h>
 #include <gbadobject.h>
@@ -20,7 +21,7 @@ public:
     ~GPipeInfoDialog();
 
     void setFloorText(const QString &floorText);
-    void setFlow(double value);
+    void setPeakFlow(double value);
     void setDN(int value);
 
 signals:
@@ -34,15 +35,20 @@ private slots:
     void on_okButton_clicked(bool);
     void on_deleteButton_clicked(bool);
     void on_switchButton_clicked(bool);
+
     void cellClicked(int row, int column);
+    void itemChanged(QTableWidgetItem *item);
 
 private:
     Ui::GPipeInfoDialog *ui;
 
     GPipe *currentPipe;
     QString m_floorText;
+    QString getArt(int nr);
 
     void updateTable(const QList<GBadObject *> &list);
+    void updateObjectTable( QMap<int, QPair<double, double>>flowMap );
+    QMap<int, QPair<double, double>> getFlowMap();
 
 };
 

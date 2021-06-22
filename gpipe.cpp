@@ -89,6 +89,8 @@ GPipe::GPipe(GPipeType TYPE, bool COLD, double LENGTH, QGraphicsItem *parent) :
     setShowNr(false);
     setMaterial("");
     setFlowSpeed(2.0);
+    setTotalResistance(45.0);
+    setDn(0);
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &GPipe::updateBlinkingColor);
@@ -198,6 +200,26 @@ QVariant GPipe::itemChange(QGraphicsItem::GraphicsItemChange change, const QVari
          }
      }
     return QGraphicsItem::itemChange(change, value);
+}
+
+int GPipe::getDn() const
+{
+    return m_dn;
+}
+
+void GPipe::setDn(int dn)
+{
+    m_dn = dn;
+}
+
+double GPipe::getTotalResistance() const
+{
+    return m_totalResistance;
+}
+
+void GPipe::setTotalResistance(double totalResistance)
+{
+    m_totalResistance = totalResistance;
 }
 
 double GPipe::getFlowSpeed() const
@@ -574,6 +596,36 @@ bool GPipe::containsObjectType(const GBadObject::GBadObjectType &type)
     return status;
 }
 
+void GPipe::insertFlow(int nr, double cold, double hot)
+{
+    QPair<double, double> p;
+    p.first = cold;
+    p.second = hot;
+    objectFlowMap.insert(nr, p);
+}
+
+QMap<int, QPair<double, double> > GPipe::getObjectFlowMap()
+{
+    return objectFlowMap;
+}
+
+void GPipe::setObjectFlowMap(QMap<int, QPair<double, double> >map)
+{
+    objectFlowMap = map;
+}
+
+double GPipe::getFlow()
+{
+    double bd = 0.0;
+    QMapIterator<int, QPair<double, double>>it(objectFlowMap);
+    while (it.hasNext()) {
+        it.next();
+        bd += it.value().first;
+        bd += it.value().second;
+    }
+
+    return bd;
+}
 
 QString GPipe::getTypeString()
 {

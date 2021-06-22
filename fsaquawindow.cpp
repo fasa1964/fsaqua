@@ -1,4 +1,4 @@
-#include "fsaquawindow.h"
+﻿#include "fsaquawindow.h"
 #include "ui_fsaquawindow.h"
 
 #include <QSettings>
@@ -12,6 +12,7 @@
 #include <QScrollBar>
 #include <QFile>
 #include <QFileDialog>
+#include <QPair>
 
 #include <gbadobjectinfodialog.h>
 #include <gpipeinfodialog.h>
@@ -35,6 +36,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     positionStrangMarker = false;
     strangMarkerMove = false;
     pipeInstalled = false;
+    pipeCalculated = false;
     dropObject = false;
     dropArmatur = false;
     armaturIsMoving = false;
@@ -91,6 +93,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     floorCountChanged(1);
 
     mouseText = new QGraphicsTextItem("Höhe: ");
+    statusText = new QGraphicsTextItem("");
 
     formvs = new FormFormularVs();
     formvs->hide();
@@ -103,6 +106,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     connect(ui->actionSaveProject , &QAction::triggered, this, &FSAquaWindow::actionSaveProject);
     connect(ui->actionLoadProject , &QAction::triggered, this, &FSAquaWindow::actionLoadProject);
     connect(ui->actionNewProject , &QAction::triggered, this, &FSAquaWindow::actionNewProject);
+    connect(ui->actionDeleteProject , &QAction::triggered, this, &FSAquaWindow::actionDeleteProject);
     connect(ui->actionTools , &QAction::triggered, this, &FSAquaWindow::showToolsForm);
     connect(ui->actionShowObjectNr , &QAction::triggered, this, &FSAquaWindow::showObjectNr );
     connect(ui->actionShowFlowDirection , &QAction::triggered, this, &FSAquaWindow::showFlowDirection );
@@ -179,12 +183,20 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
 
 
     // PipeListWidget
-    formpipelist = new PipeListWidget(0);
-    formpipelist->hide();
+    SectionPipeDialog = new PipeListWidget(0);
+    connect(SectionPipeDialog, &PipeListWidget::rowSelect, this, &FSAquaWindow::rowSelect);
+    SectionPipeDialog->hide();
 
 
     ui->editorView->update();
     scene->update();
+
+    measureText = new QGraphicsTextItem("");
+    measureLine = new QGraphicsLineItem();
+    scene->addItem(measureText);
+    scene->addItem(measureLine);
+    measureLine->hide();
+    measureText->hide();
 }
 
 FSAquaWindow::~FSAquaWindow()
@@ -218,7 +230,7 @@ void FSAquaWindow::closeApplication()
     saveSettings();
 
     tools->close();
-    formpipelist->close();
+    SectionPipeDialog->close();
 
     close();
 }
@@ -271,9 +283,9 @@ void FSAquaWindow::showMousePosition(bool status)
 void FSAquaWindow::showPipeSectionsInfo(bool status)
 {
     if(status)
-        formpipelist->show();
+        SectionPipeDialog->show();
     else
-        formpipelist->hide();
+        SectionPipeDialog->hide();
 
     ui->actionShowPipesectionsInfo->setChecked(status);
 }
@@ -302,7 +314,7 @@ void FSAquaWindow::scrollBarMoved(int)
 
 void FSAquaWindow::on_spitzendurchflussBox_valueChanged(double)
 {
-    if(pipeTested && !statusLoading){
+    if( pipeTested && !statusLoading && pipeInstalled ){
         pipeTested = false;
         tools->setBlinkButton(true, "test");
     }
@@ -339,23 +351,49 @@ void FSAquaWindow::actionSaveProject()
         map.insert("pipecount", pipeList.size());
         map.insert("armaturcount", armaturList.size());
         map.insert("pipeinstalled", pipeInstalled);
+        map.insert("pipecalculated", pipeCalculated);
         map.insert("pipetested", pipeTested);
+        map.insert("mvd", ui->mvdBox->value());
+
 
         if(!teilstreckenMap.isEmpty())
         {
             QMap<QString, QVariant> vMap;
             QMapIterator<int, QList<GPipe *> > it(teilstreckenMap);
-            while (it.hasNext()) {
+            while (it.hasNext())
+            {
                 it.next();
-                QString value = QString("%1").arg(it.key());
+                QString key = QString("%1").arg(it.key());
                 QStringList nrList;
-                for(int i = 0; i < it.value().size(); i++)
-                    nrList << QString("%1").arg( it.value().at(i)->getNr() );
-                vMap.insert(value, nrList);
+                //QList<QVariant> nrPipeList;
+                foreach(GPipe *p, it.value())
+                    nrList << QString("%1").arg( p->getNr() );
+
+                vMap.insert(key, nrList);
+
             }
 
             map.insert("teilstreckenmap", vMap);
 
+        }
+
+        if(!calculatedPipeMap.isEmpty())
+        {
+            QMap<QString, QVariant> vMap;
+            QMapIterator<int, QList<int> > it(calculatedPipeMap);
+            while (it.hasNext())
+            {
+                it.next();
+                QString key = QString("%1").arg(it.key());
+                QStringList nrList;
+                foreach(int nr, it.value())
+                    nrList << QString("%1").arg(nr);
+
+                vMap.insert(key, nrList);
+
+            }
+
+            map.insert("calculatedpipemap", vMap);
         }
 
         QDataStream out(&file);
@@ -379,7 +417,8 @@ void FSAquaWindow::actionSaveProject()
 
             out << t << p->scenePos() << p->getNr() << p->getStrangMarkerNr() << p->getMeter() << p->activ() <<
                    p->cold() << p->circulation() << p->density() << p->length() << p->color() << p->getMaterial() <<
-                   p->getFloorIndex() << p->getFlowDirection() << p->getMarker() << p->getObjectNrList();
+                   p->getFloorIndex() << p->getFlowDirection() << p->getMarker() << p->getObjectNrList() <<
+                   p->getObjectFlowMap() << p->getTotalResistance() << p->getDn();
         }
 
 
@@ -472,11 +511,6 @@ void FSAquaWindow::actionLoadProject()
             obj->setPipeNr(pnr);
             obj->setDauerlaeufer(pl);
 
-
-//            GBadObject obj;
-//            in >> obj;
-
-//            GBadObject *o = new GBadObject(obj);
             oList << obj;
         }
 
@@ -498,10 +532,14 @@ void FSAquaWindow::actionLoadProject()
             QString direction;
             bool marker;
             QList<int> nrList;
+            QMap<int, QPair<double, double>>map;
+            double totalResistence;
+            int dn;
 
 
             in >> (quint32&)t >> sp >> nr >> strangNr >> meter >> activ >> cold >> circ >>
-                  density >> len >> col >> mat >> findex >> direction >> marker >> nrList;
+                  density >> len >> col >> mat >> findex >> direction >> marker >> nrList >>
+                  map >> totalResistence >> dn;
 
             GPipe *p = new GPipe(t,cold, len,0);
             p->setSPos(sp);
@@ -519,6 +557,9 @@ void FSAquaWindow::actionLoadProject()
             p->setFlowDirection(direction);
             p->setMarker(marker);
             p->setObjectNrList( nrList );
+            p->setObjectFlowMap( map );
+            p->setTotalResistance( totalResistence );
+            p->setDn(dn);
 
             pList << p;
         }
@@ -575,7 +616,10 @@ void FSAquaWindow::actionLoadProject()
         scene->setSceneRect( map.value("scenerect").toRectF());
         pipeInstalled = map.value("pipeinstalled").toBool();
         pipeTested = map.value("pipetested").toBool();
+        pipeCalculated = map.value("pipecalculated").toBool();
         ui->dinBox->setCurrentText( map.value("din").toString());
+        ui->mvdBox->setValue( map.value("mvd").toInt());
+
 
         foreach(GBadObject *obj, oList)
         {
@@ -583,6 +627,9 @@ void FSAquaWindow::actionLoadProject()
             obj->setPos( obj->sPos());
 
             objectList << obj;
+
+
+            obj->setDisplayNr( ui->actionShowObjectNr->isChecked());
 
             connect(obj, &GBadObject::objectHasDeleted, this, &FSAquaWindow::objectHasDeleted);
             connect(obj, &GBadObject::objectInfo, this, &FSAquaWindow::objectInfo);
@@ -617,6 +664,23 @@ void FSAquaWindow::actionLoadProject()
         {
             scene->addItem(a);
             a->setPos( a->sPos() );
+            if(  pipe(a->pipeNr())->getFlowDirection() == "up" && a->type() == GArmatur::SVRV )
+            {
+                QTransform t = a->transform();
+                t.rotate(90, Qt::ZAxis);
+                t.rotate(180, Qt::YAxis);
+                a->setTransform(t);
+                a->setTransformOriginPoint( a->boundingRect().center());
+            }
+            if(  pipe(a->pipeNr())->getFlowDirection() == "down" && a->type() == GArmatur::RV )
+            {
+                QTransform t = a->transform();
+                t.rotate(90, Qt::ZAxis);
+                t.rotate(180, Qt::YAxis);
+                a->setTransform(t);
+                a->setTransformOriginPoint( a->boundingRect().center());
+
+            }
 
             armaturList << a;
             connect(a, &GArmatur::leftMouseButtonPressed, this, &FSAquaWindow::leftMouseButtonPressed);
@@ -651,6 +715,7 @@ void FSAquaWindow::actionLoadProject()
 
         if(pipeTested)  // Pipe was tested
         {
+            // Reconstruct the pipe section map
             QMap<QString, QVariant> vMap;
             vMap = map.value("teilstreckenmap").toMap();
             QMapIterator<QString, QVariant> it(vMap);
@@ -665,17 +730,39 @@ void FSAquaWindow::actionLoadProject()
                     int pipeNr = nrList.at(i).toInt(&ok);
                     pipeList << pipe( pipeNr );
                 }
-
-//                qDebug() << "-----------------";
-//                qDebug() << it.key();
-//                qDebug() << it.value();
-//                qDebug() << "-----------------";
                 teilstreckenMap.insert(nr, pipeList);
-                formpipelist->insertRow(pipeList, nr, true);
+                SectionPipeDialog->insertRow(pipeList, nr, true);
 
             }
+
+            if(pipeCalculated)
+            {
+                QMap<QString, QVariant> vMap;
+                vMap = map.value("pipecalculated").toMap();
+                QMapIterator<QString, QVariant> it(vMap);
+                while (it.hasNext()) {
+                    it.next();
+                    bool ok;
+                    int nr = it.key().toInt(&ok);
+                    QStringList nrList = it.value().toStringList();
+                    QList<int> pnrList;
+                    for(int i = 0; i < nrList.size(); i++){
+                        int pipeNr = nrList.at(i).toInt(&ok);
+                        pnrList << pipeNr;
+                    }
+                    calculatedPipeMap.insert(nr, pnrList);
+                }
+            }
+
+            updateHeightPressureDiff();
+            updatePressureLossArmatur();
+            ui->actionShowPipesectionsInfo->setChecked(true);
+            showPipeSectionsInfo(true);
+            tools->enableCalculateButton(true);
+
         }
 
+        ui->actionDeleteProject->setEnabled(true);
         setCursor(Qt::ArrowCursor);
         statusLoading = false;
     }
@@ -684,14 +771,42 @@ void FSAquaWindow::actionLoadProject()
 
 void FSAquaWindow::actionNewProject()
 {
+    ui->projectNameEdit->clear();
+    ui->actionDeleteProject->setEnabled(false);
     clearScene();
+}
+
+void FSAquaWindow::actionDeleteProject()
+{
+    QString filename = ui->projectNameEdit->text()+".prj";
+
+    QFile file(filename);
+
+    if(!file.exists()){
+        QMessageBox::information(this, tr("Delete Project"), tr("File: ")+filename+tr(" not exist!"));
+        return;
+    }
+
+    int result = QMessageBox::question(this, tr("Delete Project"), tr("Removing Project will delete all information!"),
+                 QMessageBox::Abort | QMessageBox::Yes);
+
+    if(result == QMessageBox::Abort)
+        return;
+
+    if(file.remove()){
+        clearScene();
+        ui->statusBar->showMessage(tr("Project successfull removed!"), 8000);
+        ui->actionDeleteProject->setEnabled(false);
+    }else
+        ui->statusBar->showMessage(tr("Removing project failed!"), 8000);
 }
 
 void FSAquaWindow::clearScene()
 {
-    // Clear the Formpipelist
+    // Clear the SectionPipeDialog
     teilstreckenMap.clear();
-    formpipelist->clearList();
+    SectionPipeDialog->clearList();
+    calculatedPipeMap.clear();
 
     deletePipeButtonClicked();
     deleteObjects();
@@ -706,10 +821,11 @@ void FSAquaWindow::clearScene()
     pipeList.clear();
     armaturList.clear();
     pipeTested = false;
+    pipeCalculated = false;
+    tools->enableInstallButton(false);
+    tools->enableCalculateButton(false);
 
 }
-
-
 
 void FSAquaWindow::dropObjectSelcted(const QString &objectType)
 {
@@ -889,8 +1005,6 @@ void FSAquaWindow::installButtonClicked()
         }
     }
 
-
-
    installConectingPipe();
    installCollectingPipe();
    installRisingPipe();
@@ -904,10 +1018,11 @@ void FSAquaWindow::installButtonClicked()
    tools->enableTestInstallButton(false);
    tools->enableDeletePipeButton(true);
    tools->enableArmaturButtons(true);
+   tools->enableCalculateButton(true);
 
-   // Clear the Formpipelist
+   // Clear the SectionPipeDialog
    teilstreckenMap.clear();
-   formpipelist->clearList();
+   SectionPipeDialog->clearList();
 
 }
 
@@ -959,173 +1074,139 @@ void FSAquaWindow::testInstallation()
 {
     simulationRect->show();
     updateProxiWidgets();
-
     showPipeSectionsInfo(true);
 
+    pipeCalculated = false;
     teilstreckenMap.clear();
-    formpipelist->clearList();
+    calculatedPipeMap.clear();
+    SectionPipeDialog->clearList();
 
-    formpipelist->setLabelStatus("Überprüfe Verbindungen!");
-    ui->statusBar->showMessage("Überprüfe Verbindungen!");
-    simulationWidget->setText("Überprüfe Verbindungen!", QColor(0,85,127));
-
-    // Test connecting of pipe
-    // --------------------
-    QMap<int, QList<GPipe *>> failedMap;
-    int index = 0;
+    // Check if any pipe without length and set material
+    sendMessage(tr("Check pipe length!"));
+    bool pipeLengthFailed = true;
     foreach(GPipe *p, pipeList)
     {
-        QList<GPipe *> list;
-        if(p->type() == GPipe::RGA)
+        if(p->getMeter() > 0.0)
         {
-            if(!p->containsObjectType(GBadObject::WSIB) && !p->containsObjectType(GBadObject::DHE))
-            {
-                list = testConnection(p);
-
-                if(containsMainPipe(list))
-                {
-                    teilstreckenMap.insert(index, list);
-                    ui->statusBar->showMessage(QString("Teilstrecke %1 Verbindungen OK").arg(index));
-                    simulationWidget->setText(QString("Teilstrecke %1 Verbindungen OK").arg(index), Qt::darkGreen);
-
-
-                    formpipelist->insertRow(list, index, true);
-                    formpipelist->setLabelStatus(QString("Teilstrecke %1 Verbindungen OK").arg(index));
-
-                    Sleep(duration);
-                }
-                else
-                {
-                    ui->statusBar->showMessage(QString("Teilstrecke %1 fehlerhaft").arg(index));
-                    simulationWidget->setText(QString("Teilstrecke %1 fehlerhaft").arg(index), Qt::red);
-                    failedMap.insert(index,list);
-
-                    formpipelist->insertRow(list, index, false);
-                    formpipelist->setLabelStatus(QString("Teilstrecke %1 fehlerhaft").arg(index));
-                }
-                index++;
-
-                foreach(GPipe *s, list)
-                {
-                    if(s->cold())
-                        s->setColor(Qt::darkGreen);
-                    else
-                        s->setColor(Qt::red);
-                    scene->update();
-                }
-            }
+            p->setColor(Qt::cyan);
+            pipeLengthFailed = false;
         }
-    }
+        else
+        {
+            p->setColor(Qt::magenta);
 
-    formpipelist->setLabelStatus("Überprüfung der Verbindungen abgeschlossen!");
-    ui->statusBar->showMessage("Überprüfung der Verbindungen abgeschlossen!",5000);
-    simulationWidget->setText("Überprüfung der Verbindungen abgeschlossen!", QColor(0,85,127));
-    Sleep(duration);
+        }
+        p->setMaterial("Kupfer");
+        updateStatusText(QString("%1m | Material:%2").arg(p->getMeter()).arg(p->getMaterial()), p->getPipeMitte());
+        scene->update();
+        Sleep(duration);
 
-    // Switch to normal colors
-    foreach(GPipe *p, pipeList){
         if(p->cold())
             p->setColor(Qt::darkGreen);
         else
             p->setColor(Qt::red);
-
     }
-    scene->update();
-
-
-    if(teilstreckenMap.isEmpty())
-        return;
-
-
-    // Test length of pipe
-    // --------------------
-    formpipelist->setLabelStatus("Überprüfe die Rohrleitungslängen!");
-    ui->statusBar->showMessage("Überprüfe die Rohrleitungslängen!");
-    simulationWidget->setText("Überprüfe die Rohrleitungslängen!", QColor(0,85,127));
-
-    QMapIterator<int, QList<GPipe *>> it(teilstreckenMap);
-    while (it.hasNext()) {
-        it.next();
-        if(testLength(it.value()))
-            formpipelist->setText(it.key(), 2, "OK");
-        else
-            formpipelist->setText(it.key(), 2, "Failed");
-        Sleep(duration);
-    }
-
-    formpipelist->setLabelStatus("Überprüfung der Rohrleitungslängen abgeschossen!");
-    ui->statusBar->showMessage("Überprüfung der Rohrleitungslängen abgeschossen!",5000);
-    simulationWidget->setText("Überprüfung der Rohrleitungslängen abgeschossen!", QColor(0,85,127));
-
-
-    Sleep(duration);
-    formpipelist->setLabelStatus("Beginne mit der Zuordnung der Objekte!");
-    ui->statusBar->showMessage("Beginne mit der Zuordnung der Objekte!");
-    simulationWidget->setText("Beginne mit der Zuordnung der Objekte!", QColor(0,85,127));
-
-    // Setup flow and peak flow of each pipe
-    QMapIterator<int, QList<GPipe *>> itc(teilstreckenMap);
-    while (itc.hasNext())
+    if(pipeLengthFailed)
     {
-        itc.next();
-        double sd = 0.0;
-        int lu = 0;
-        QList<GBadObject *> oList;
-        foreach(GPipe *p, itc.value())
-        {
-            foreach(GBadObject *o, p->badObjectList())
-            {
-                if(!oList.contains(o))
-                {
-                    oList << o;
-
-                    if(p->cold())
-                        sd += o->bdKW();
-                    else
-                        sd += o->bdWW();
-                    lu += o->lu();
-                }
-            }
-
-            p->setColor(Qt::cyan);
-            p->setGBadObjectList(oList);
-            scene->update();
-            Sleep(duration);
-        }
-
-
-        // Reset color and calculate the flow
-        foreach(GPipe *p, itc.value())
-        {
-            if(p->cold())
-                p->setColor(Qt::darkGreen);
-            else
-                 p->setColor(Qt::red);
-            scene->update();
-        }
-
-        formpipelist->setFlow(itc.key(), 3  ,sd);
-        formpipelist->setLu(itc.key(),4 ,lu);
-
-        formpipelist->setLabelStatus(QString("Teilstrecke %1 OK").arg(itc.key()));
-        simulationWidget->setText(QString("Teilstrecke %1 OK").arg(itc.key()), QColor(0,85,127));
-
+        QMessageBox::information(this, tr("Pipe length failed"), tr("Please check the pipe length, before go on!"));
+        return;
     }
 
-    formpipelist->setLabelStatus("Zuordnung der Objekte abgeschlossen!");
-    ui->statusBar->showMessage("Zuordnung der Objekte abgeschlossen!");
-    simulationWidget->setText("Zuordnung der Objekte abgeschlossen!", QColor(0,85,127));
+    removeStatusText();
+    Sleep(duration);
+    sendMessage(tr("Check pipe connection!"));
 
-    Sleep(5000);
-    simulationRect->hide();
-    pipeTested = true;
-    tools->setBlinkButton(false, "test");
+    // Check the connecting pipe and creates a sectionPipeMap
+    if(createSectionPipeMap())
+    {
+        // Go on with testing installation
+        sendMessage(tr("Check pipe connecting successfull done!"));
+        Sleep(duration);
+
+        sendMessage(tr("Start to configure pipe's"));
+        Sleep(duration);
+        setupPipeObjects(teilstreckenMap);
+
+        sendMessage(tr("Configure pipe's done!"));
+        Sleep(duration);
+
+        sendMessage(tr("Calculate pressure loss Hgeo"));
+        updateHeightPressureDiff();
+
+        sendMessage(tr("Calculate pressure loss in valves"));
+        updatePressureLossArmatur();
+
+        if(statusText != nullptr)
+            statusText->hide();
+        simulationRect->hide();
+        pipeTested = true;
+        tools->setBlinkButton(false, "test");
+
+        tools->enableCalculateButton(true);
+        return;
+    }
+    else
+    {
+        QMessageBox::information(this, tr("Connecting pipe failed"), tr("Please check the connecting pipe, before go on!"));
+        return;
+    }
 }
 
 void FSAquaWindow::calculateInstallation()
 {
+    sendMessage(tr("Check all valves!"));
+
+    // Turn off the armatur status
+    showArmaturStatus(false);
+    double scale;
+    QMap<int, GArmatur *> aMapFailed;
+    foreach(GArmatur *a, armaturList)
+    {
+
+        if(a->type() != GArmatur::FSVE)
+        {
+            a->setShowStatus(true);
+
+            if(a->getPessureLoss() <= 0.0){
+                aMapFailed.insert(a->nr(), a);
+                QString message = QString("Armatur: %1").arg(a->nr())+ " failed";
+                sendMessage(message);
+                updateStatusText(tr("FAILED"), a->scenePos());
+            }
+            else
+            {
+                scale = a->scale();
+                a->setScale(1.2);
+                QString message = QString("Armatur: %1").arg(a->nr())+ " ok";
+                sendMessage(message);
+                updateStatusText(tr("OK"), a->scenePos());
+            }
+
+            Sleep(duration);
+            a->setShowStatus(false);
+            a->setScale(scale);
+            scene->update();
+        }
+    }
+
+    if(!aMapFailed.isEmpty())
+    {
+        QMessageBox::information(this, tr("Valve error"), tr("Some valves without pressure loss!\nPlease check valves."));
+        return;
+    }
+
+    sendMessage(tr("Setup all pipes!"));
+    calculatedPipeMap = setupCalculatedMap();
+    resetPipeColor();
+    removeStatusText();
+
+    if(ui->dinBox->currentText() == "DIN 1988")
+        calculateDIN1988();
+    else
+        calculateDINEN806();
 
 }
+
 
 void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
 {
@@ -1188,8 +1269,11 @@ void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
         tools->enableInstallButton(true);
         updateFlow();
 
-        if(pipeInstalled)
+        if(pipeInstalled){
             tools->setBlinkButton(true, "install");
+            tools->enableTestInstallButton(false);
+            SectionPipeDialog->clearList();
+        }
 
     }
 
@@ -1273,6 +1357,7 @@ void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
         dropArmatur = false;
         selectedPipe = nullptr;
         setCursor(Qt::ArrowCursor);
+        updatePressureLossArmatur();
     }
 
     // -----------------------------
@@ -1378,6 +1463,10 @@ void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
                 p->setColor(Qt::red);
 
         }
+
+        foreach(QGraphicsItem *item, measureList)
+            scene->removeItem(item);
+
         scene->update();
     }
 
@@ -1808,7 +1897,7 @@ void FSAquaWindow::pipeInfo(GPipe *pipe)
 {
     GPipeInfoDialog *pipeDlg = new GPipeInfoDialog(pipe, this);
     pipeDlg->setFloorText( tools->getFloorText( pipe->getFloorIndex() ));
-    pipeDlg->setFlow( getFlow(pipe) );
+    pipeDlg->setPeakFlow( getPeakFlow(pipe) );
     pipe->setReadToConnect(true);
     connect(pipeDlg, &GPipeInfoDialog::deletePipe, this, &FSAquaWindow::pipeDeleted);
     connect(pipeDlg, &GPipeInfoDialog::switchFlowDirection, this, &FSAquaWindow::switchFlowDirectionPipe);
@@ -1964,7 +2053,9 @@ void FSAquaWindow::leftMouseButtonPressed(QPointF /*scenePos*/, GArmatur *armatu
 void FSAquaWindow::armaturInfo(GArmatur *arm)
 {
     GArmaturInfoDialog *dlg = new GArmaturInfoDialog(arm, this);
+    connect(dlg, &GArmaturInfoDialog::armaturDNChanged, this, &FSAquaWindow::armaturDNHasBeenChanged);
     dlg->exec();
+    updatePressureLossArmatur();
 }
 
 void FSAquaWindow::armaturDeleted(GArmatur *arm)
@@ -1974,6 +2065,8 @@ void FSAquaWindow::armaturDeleted(GArmatur *arm)
         if(armaturList.removeOne(arm))
             scene->removeItem(arm);
     }
+
+    updatePressureLossArmatur();
 }
 
 double FSAquaWindow::pressureLossArmatur(GArmatur *arm)
@@ -1990,6 +2083,105 @@ double FSAquaWindow::pressureLossArmatur(GArmatur *arm)
     return hPa;
 }
 
+void FSAquaWindow::armaturDNHasBeenChanged(GArmatur *valve)
+{
+    int result = QMessageBox::question(this, tr("Armatur"), tr("The DN of armatur has been chanded.\n"
+                 "Do you want to equate all armaturs of this pipe?"), QMessageBox::No | QMessageBox::Yes);
+
+    if(result == QMessageBox::Yes)
+    {
+        int dn = valve->dn();
+        int pipeNr = valve->pipeNr();
+
+        foreach(GArmatur *a, armaturList)
+        {
+            if(a != valve && a->pipeNr() == pipeNr)
+            {
+                a->setDn(dn);
+            }
+        }
+    }
+}
+
+void FSAquaWindow::rowSelect(int row, int column)
+{
+    QList<GPipe *> pList = teilstreckenMap.value(row);
+    resetPipeColor();
+
+    qDebug() << "Length: "<< getPipeListLength(pList);
+    qDebug() << "hGeo: "<< getDPgeo(pList);
+
+    foreach(GPipe *p, pList)
+        p->setColor(Qt::cyan);
+
+    scene->update();
+
+
+    if(column == 3) // dP geo
+    {
+
+        GPipe *mp = pipe(0);
+        if(!pList.contains(mp))
+            return;
+
+
+        QPointF pos1 = mp->scenePos();             // Main Pipe
+        pos1.setX( mp->getPipeStart().x() );
+
+        QPointF pos2 = pList.first()->scenePos();  // First Pipe
+        pos2.setX(mp->getPipeStart().x());
+
+        double pipeHeight = pList.first()->badObjectList().first()->getAnschlussHoehe(); // * 100; // Pipe connecting length
+        int  floorindex = pList.first()->badObjectList().first()->getFloorIndex();
+        double floorHeight = (floorList.at(floorindex)->scenePos().y() - floorThickness + 10.0)  / 100.0;
+
+
+        double hMainPipe = (getHeightDiff(QPointF(0,0),pos1)- (floorThickness+10)) / 100.0;
+        double hDiff = floorHeight - hMainPipe + pipeHeight;
+        double density = pList.first()->density();      // kg/qm
+        double g = 9.81;
+        double pGeo = density * g * hDiff / 100.0;      // hPa
+
+        qDebug() << "Main pipe height: " << hMainPipe;
+        qDebug() << "Floor height: " << floorHeight;
+        qDebug() << "Height diff: " << hDiff;
+        qDebug() << "AH: " << pipeHeight;
+        qDebug() << "Pgeo: " << pGeo;
+
+
+
+
+
+//        foreach(QGraphicsItem *item, measureList)
+//            scene->removeItem(item);
+
+//        QPen pen;
+//        pen.setColor(QColor(41,128,185));
+//        pen.setWidthF(1.0);
+//        qreal ah = pList.first()->badObjectList().first()->getAnschlussHoehe() * 100;
+//        qreal posY = floorList.at(pList.first()->badObjectList().first()->getFloorIndex())->scenePos().y() + floorThickness + ah;
+
+
+//        QLineF lne;
+//        lne.setP2(  pList.last()->getPipeStart().toPoint() ); // Main pipe
+//        lne.setP1( QPoint( pList.last()->getPipeStart().toPoint().x(),  posY ) );
+
+//        QString s = QString("%1m").arg( getHeightDiff(lne.p1(), lne.p2())/100 );
+//        QGraphicsTextItem *text = new QGraphicsTextItem(s);
+//        QGraphicsLineItem *line = new QGraphicsLineItem(lne);
+
+//        scene->addItem(line);
+//        scene->addItem(text);
+
+//        line->setPen(pen);
+//        text->setDefaultTextColor(QColor(41,128,185));
+//        //text->setRotation(180);
+//        text->setPos(pList.last()->getPipeStart().x(), posY/2);
+//        text->setTransform( ui->editorView->transform() );
+//        scene->update();
+//        measureList << line << text;
+    }
+}
 
 void FSAquaWindow::moveToRight(int strangIndex)
 {
@@ -2122,6 +2314,229 @@ void FSAquaWindow::updateObjects()
     }
 }
 
+bool FSAquaWindow::objectListContains(const QList<GBadObject *> &list, GBadObject::GBadObjectType type)
+{
+    bool status = false;
+    foreach(GBadObject *o, list){
+        if(o->type() == type){
+            status = true;
+            break;
+        }
+    }
+
+    return status;
+}
+
+void FSAquaWindow::updateHeightPressureDiff()
+{
+    if(teilstreckenMap.isEmpty())
+        return;
+
+    QMapIterator<int, QList<GPipe *>> it(teilstreckenMap);
+    while (it.hasNext()) {
+        it.next();
+        QList<GPipe *> pList;
+        pList = it.value();
+        int nr = it.key();
+
+        double pminfl = pList.first()->badObjectList().first()->md();
+        double dpgeo = getDPgeo(pList);
+
+        SectionPipeDialog->setValue(nr, 3, dpgeo, "hPa");
+        SectionPipeDialog->setValue(nr, 4, pminfl, "hPa");
+
+        if(!statusLoading)
+            Sleep(duration);
+
+    }
+}
+
+void FSAquaWindow::updatePressureLossArmatur()
+{
+    if(teilstreckenMap.isEmpty())
+        return;
+
+    QMapIterator<int, QList<GPipe *>>it(teilstreckenMap);
+    while (it.hasNext())
+    {
+        it.next();
+
+        double pressureLoss = 0.0;
+
+        QList<GPipe *> pList;
+        pList = it.value();
+        QList<int> pNrList;
+        foreach(GPipe *p, pList)
+            pNrList << p->getNr();
+
+        foreach(GArmatur *a, armaturList)
+        {
+            if(pNrList.contains(a->pipeNr()))
+            {
+                pressureLoss += a->getPessureLoss();
+            }
+        }
+
+        SectionPipeDialog->setValue(it.key(), 5, pressureLoss, "hPa");
+
+    }
+}
+
+double FSAquaWindow::getPipeListLength(QList<GPipe *> pList)
+{
+    double meter = 0.0;
+    foreach(GPipe *p, pList)
+        meter += p->getMeter();
+    return meter;
+}
+
+double FSAquaWindow::getDPgeo(QList<GPipe *> pList)
+{
+    double pGeo = 0.0;
+
+    GPipe *mp = pipe(0);
+    if(!pList.contains(mp))
+        return 0.0;
+
+
+    QPointF pos1 = mp->scenePos();             // Main Pipe
+    pos1.setX( mp->getPipeStart().x() );
+
+    QPointF pos2 = pList.first()->scenePos();  // First Pipe
+    pos2.setX(mp->getPipeStart().x());
+
+    double pipeHeight = pList.first()->badObjectList().first()->getAnschlussHoehe(); // * 100; // Pipe connecting length
+    int  floorindex = pList.first()->badObjectList().first()->getFloorIndex();
+    double floorHeight = (floorList.at(floorindex)->scenePos().y() - floorThickness + 10.0)  / 100.0;
+
+
+    double hMainPipe = (getHeightDiff(QPointF(0,0),pos1)- (floorThickness+10)) / 100.0;
+    double hDiff = floorHeight - hMainPipe + pipeHeight;
+    double density = pList.first()->density();          // kg/qm
+    double g = 9.81;                                    // m/sq
+    pGeo = density * g * hDiff / 100.0;                 // hPa
+
+
+    return pGeo;
+}
+
+int FSAquaWindow::getPipeLU(GPipe *pipe)
+{
+    int lu = 0;
+    QList<int> objectNrList = pipe->getObjectFlowMap().keys();
+    for(int i = 0; i < objectNrList.size(); i++)
+        lu += getGBadObject(objectNrList.at(i))->lu();
+
+    return lu;
+}
+
+QMap<int, QList<int> > FSAquaWindow::setupCalculatedMap()
+{
+    QMap<int, QList<int>>map;
+    QList<int> nrList;
+    QList<int> iList;
+    int index = 1;
+    QMap<int,int> startMap;
+
+
+    startMap.insert(startMap.size(), 0);
+    foreach(GPipe *p, pipeList)
+    {
+        if(!p->getMarker())
+        {
+            if(hasNext(p) && hasPrevious(p))
+            {
+                if(previousCPipe(p).size() == 2 && nextPipe(p).size() == 1)
+                {
+                    startMap.insert(startMap.size(), p->getNr());
+                    p->setColor(Qt::cyan);
+                    scene->update();
+                    Sleep((duration));
+                }
+            }
+
+            if(hasNext(p) && !hasPrevious(p))
+            {
+                startMap.insert(startMap.size(), p->getNr());
+                p->setColor(Qt::cyan);
+                scene->update();
+                Sleep((duration));
+            }
+        }
+    }
+
+    QMapIterator<int, int>it(startMap);
+    while (it.hasNext())
+    {
+        it.next();
+
+        GPipe *np = pipe( it.value() );
+
+        iList << np->getNr();
+        nrList << np->getNr();
+        np->setColor(Qt::magenta);
+        QString text = QString("Index: %1 Pipe-Nr:%2").arg(index).arg(np->getNr()) + " inserted";
+        updateStatusText(text, np->scenePos());
+        scene->update();
+        Sleep(duration);
+
+        while (hasNext(np))
+        {
+            QList<GPipe *>pL = nextPipe(np);
+            if(pL.size() == 1)
+                np = pL.first();
+            else {
+
+                break;
+            }
+            if(!iList.contains(np->getNr()))
+            {
+                iList << np->getNr();
+                nrList << np->getNr();
+                np->setColor(Qt::magenta);
+                QString text = QString("Index: %1 Pipe-Nr:%2").arg(index).arg(np->getNr()) + " inserted";
+                updateStatusText(text, np->scenePos());
+                scene->update();
+                Sleep(duration);
+            }
+        }
+
+        map.insert(index, nrList);
+        index++;
+        nrList.clear();
+
+    }
+
+    foreach(GPipe *p, pipeList){
+        if(!iList.contains(p->getNr())){
+            QList<int> il;
+            il << p->getNr();
+            iList << p->getNr();
+            p->setColor(Qt::magenta);
+            QString text = QString("Index: %1 Pipe-Nr:%2").arg(index).arg(p->getNr()) + " inserted";
+            updateStatusText(text, p->scenePos());
+            scene->update();
+            Sleep(duration);
+            map.insert(index, il);
+            index++;
+        }
+    }
+
+    QMapIterator<int, QList<int>>itc(map);
+    while (itc.hasNext()) {
+        itc.next();
+        qDebug() << "----------------------";
+        qDebug() << "Key: " << itc.key();
+        foreach(int pnr, itc.value())
+            qDebug() << pnr << ":";
+
+    }
+
+    removeStatusText();
+    resetPipeColor();
+    return map;
+}
+
 QList<GPipe *> FSAquaWindow::getStrangMarkerList()
 {
     QList<GPipe *> list;
@@ -2165,6 +2580,10 @@ bool FSAquaWindow::installConectingPipe()
                 p->setFlowDirection("down");
                 p->setFloorIndex(o->getFloorIndex());
                 p->appendGBadObject(o);
+
+                // Test flowMap
+                p->insertFlow(o->getNr(), o->bdKW(), 0.0);
+
                 p->setStrangMarkerNr( strang->getNr() );
                 GBadObject::GBadObjectType t;
                 (quint32&)t = o->type();
@@ -2202,9 +2621,16 @@ bool FSAquaWindow::installConectingPipe()
 
                 p->setFloorIndex(o->getFloorIndex());
                 foreach(GBadObject *ob, objectList){
-                    if(ob->bdWW() > 0.0)
+                    if(ob->bdWW() > 0.0){
                         p->appendGBadObject(ob);
+                        // Test flowMap
+                        p->insertFlow(o->getNr(), 0.0, ob->bdWW());
+                    }
                 }
+
+                // insert the wsib
+                p->appendGBadObject(o);
+                p->insertFlow(o->getNr(), 0.0, 0.0);
 
                 pipeList << p;
                 connect(p, &GPipe::pipeInfo, this, &FSAquaWindow::pipeInfo);
@@ -2233,6 +2659,10 @@ bool FSAquaWindow::installConectingPipe()
 
                 p->setFloorIndex(o->getFloorIndex());
                 p->appendGBadObject(o);
+
+                // Test flowMap
+                p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
                 p->setStrangMarkerNr( strang->getNr() );
                 GBadObject::GBadObjectType t;
                 (quint32&)t = o->type();
@@ -2841,45 +3271,13 @@ double FSAquaWindow::getHeightDiff(QPointF pos1, QPointF pos2)
     return diff;
 }
 
-double FSAquaWindow::getFlow(GPipe *pipe)
-{
-    GBadObject *wsib = nullptr;
-
-    // exist a wsib?
-    if(pipe->containsWSIB()){
-        foreach(GBadObject *o, pipe->badObjectList()){
-            if(o->type() == GBadObject::WSIB){
-                wsib = o;
-            }
-        }
-    }
-
-    double flow = 0.0;
-    foreach(GBadObject *o, pipe->badObjectList()){
-
-        if(pipe->cold() && pipe->containsWSIB())
-        {
-            flow += o->bdWW();
-
-            if(pipe->badObjectList().last() != wsib)
-                flow += o->bdKW();
-        }
-
-        if(pipe->cold() && !pipe->containsWSIB())
-            flow += o->bdKW();
-
-        if(!pipe->cold())
-            flow += o->bdKW();
-
-    }
-
-    return flow;
-}
-
 double FSAquaWindow::getPeakFlow(GPipe *pipe)
 {
     double peakflow = 0.00;
-    double flow = getFlow(pipe);
+    double flow = pipe->getFlow();
+
+    if(flow < 0.20 || flow > 500.0)
+        return flow;
 
     if(ui->buildingBox->currentText() == "Wohngebäude")
         peakflow = 1.48 * (qPow(flow,0.19)) - 0.94;
@@ -2908,31 +3306,110 @@ double FSAquaWindow::getPeakFlow(GPipe *pipe)
     return peakflow;
 }
 
+void FSAquaWindow::resetPipeColor()
+{
+    foreach(GPipe *p, pipeList){
+        if(p->cold())
+            p->setColor(Qt::darkGreen);
+        else
+            p->setColor(Qt::red);
+    }
+
+    scene->update();
+}
+
 QList<GPipe *> FSAquaWindow::previousPipe(GPipe *pipe)
 {
     QList<GPipe *> list;
     foreach(GPipe *p, pipeList)
     {
-        if(pipe->getPipeStart() == p->getPipeEnd())
-            list << p;
-
-        if(!pipe->cold() && p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "up" &&
-                p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+        if(p != pipe)
         {
-                if(pipe->containsObjectType(GBadObject::WSIB))
-                {
-                    if(pipe->scenePos().x() - 39.5 == p->scenePos().x())
-                        list << p;
-                }
-                if(pipe->containsObjectType(GBadObject::DHE))
-                {
-                    if(pipe->scenePos().x() + 36 == p->scenePos().x())
-                        list << p;
-                }
+            if(pipe->getPipeStart() == p->getPipeEnd())
+                list << p;
+
+            if(!pipe->cold() && p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "up" &&
+                    p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+            {
+                    if(pipe->containsObjectType(GBadObject::WSIB))
+                    {
+                        if(pipe->scenePos().x() - 39.5 == p->scenePos().x())
+                            list << p;
+                    }
+                    if(pipe->containsObjectType(GBadObject::DHE))
+                    {
+                        if(pipe->scenePos().x() + 36 == p->scenePos().x())
+                            list << p;
+                    }
+            }
         }
 
     }
 
+    return list;
+}
+
+QList<GPipe *> FSAquaWindow::previousCPipe(GPipe *pipe)
+{
+    QList<GPipe *>list;
+    QPointF p1 = pipe->getPipeStart();
+    foreach(GPipe *p, pipeList)
+    {
+        if(p != pipe)
+        {
+            if(p->getPipeStart() == p1 || p->getPipeEnd() == p1)
+                list << p;
+        }
+
+    }
+    return list;
+}
+
+QList<GPipe *> FSAquaWindow::nextPipe(GPipe *pipe)
+{
+    QList<GPipe *> list;
+    foreach(GPipe *p, pipeList)
+    {
+        if(pipe != p)
+        {
+            if(pipe->getPipeEnd() == p->getPipeStart())
+            {
+            if(!list.contains(p))
+                list << p;
+            }
+
+//        if(!pipe->cold() && p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "up" &&
+//                p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+//        {
+//                if(pipe->containsObjectType(GBadObject::WSIB))
+//                {
+//                    if(pipe->scenePos().x() - 39.5 == p->scenePos().x())
+//                        list << p;
+//                }
+//                if(pipe->containsObjectType(GBadObject::DHE))
+//                {
+//                    if(pipe->scenePos().x() + 36 == p->scenePos().x())
+//                       list << p;
+//                }
+//        }
+
+            if(pipe->cold() && !p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "down" &&
+                    p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+            {
+                if(pipe->containsObjectType(GBadObject::WSIB))
+                {
+                    if(pipe->scenePos().x() + 39.5 == p->scenePos().x())
+                        list << p;
+                }
+                if(pipe->containsObjectType(GBadObject::DHE))
+                {
+                    if(pipe->scenePos().x() - 36 == p->scenePos().x())
+                        list << p;
+                }
+            }
+        }
+
+    }
     return list;
 }
 
@@ -2963,11 +3440,61 @@ bool FSAquaWindow::hasPrevious(GPipe *pipe)
     return status;
 }
 
-QList<GPipe *> FSAquaWindow::testConnection(GPipe *pipe)
+bool FSAquaWindow::hasNext(GPipe *pipe)
+{
+    bool status = false;
+    foreach(GPipe *p, pipeList)
+    {
+        if(pipe != p)
+        {
+        if(pipe->getPipeEnd() == p->getPipeStart())
+        {
+            status = true;
+            break;
+        }
+
+//        if(!pipe->cold() && p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "up" &&
+//                p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+//        {
+//                if(pipe->containsObjectType(GBadObject::WSIB))
+//                {
+//                    if(pipe->scenePos().x() - 39.5 == p->scenePos().x())
+//                        status = true;
+//                }
+//                if(pipe->containsObjectType(GBadObject::DHE))
+//                {
+//                    if(pipe->scenePos().x() + 36 == p->scenePos().x())
+//                       status = true;
+//                }
+//        }
+
+        if(pipe->cold() && !p->cold() && pipe->type() == GPipe::RGA && pipe->getFlowDirection() == "down" &&
+                p->getFloorIndex() == pipe->getFloorIndex() && p->getStrangMarkerNr() == pipe->getStrangMarkerNr())
+        {
+            if(pipe->containsObjectType(GBadObject::WSIB))
+            {
+                if(pipe->scenePos().x() + 39.5 == p->scenePos().x())
+                    status = true;
+            }
+            if(pipe->containsObjectType(GBadObject::DHE))
+            {
+                if(pipe->scenePos().x() - 36 == p->scenePos().x())
+                    status = true;
+            }
+        }
+        }
+
+    }
+    return status;
+}
+
+// Returns a list of pipe how connecting
+// within to the main pipe
+QList<GPipe *> FSAquaWindow::getListConnection(GPipe *pipe)
 {
     QList<GPipe *> list;
     int pnr = pipe->getNr();
-    ui->statusBar->showMessage(QString("Überprüfe Rohrverbindungen Rohr:%1").arg(pnr));
+    ui->statusBar->showMessage(QString("Check pipe connection:%1").arg(pnr));
     GPipe *nextPipe = pipe;
     list << nextPipe;
     nextPipe->setColor(Qt::cyan);
@@ -2989,7 +3516,7 @@ QList<GPipe *> FSAquaWindow::testConnection(GPipe *pipe)
         pnr = nextPipe->getNr();
         nextPipe->setColor(Qt::cyan);
 
-        ui->statusBar->showMessage(QString("Überprüfe Rohrverbindungen Rohr:%1").arg(pnr));
+        ui->statusBar->showMessage(QString("Check pipe connection::%1").arg(pnr));
         scene->update();
         Sleep(duration);
         list << nextPipe;
@@ -2999,20 +3526,229 @@ QList<GPipe *> FSAquaWindow::testConnection(GPipe *pipe)
 
 }
 
-bool FSAquaWindow::testLength(QList<GPipe *> pList)
+bool FSAquaWindow::createSectionPipeMap()
 {
+    // Create sectionpipe list
+    // ---------------------------
+    QMap<int, QList<GPipe *>> failedMap;
+    int index = 0;
+    foreach(GPipe *p, pipeList)
+    {
+        QList<GPipe *> list;
+        if(p->type() == GPipe::RGA && p->badObjectList().size() == 1)
+        {
+            if(!p->containsObjectType(GBadObject::WSIB) || !p->containsObjectType(GBadObject::DHE))
+            {
+                list = getListConnection(p);
 
-    bool status = true;
-    foreach(GPipe *p, pList){
-        if(p->getMeter() <= 0.0){
-            status = false;
-            p->setColor(Qt::magenta);
-            scene->update();
+                if(containsMainPipe(list))
+                {
+                    teilstreckenMap.insert(index, list);
+                    ui->statusBar->showMessage(QString("Teilstrecke %1 Verbindungen OK").arg(index));
+                    simulationWidget->setText(QString("Teilstrecke %1 Verbindungen OK").arg(index), Qt::darkGreen);
+
+
+                    SectionPipeDialog->insertRow(list, index, true);
+                    SectionPipeDialog->setLabelStatus(QString("Teilstrecke %1 Verbindungen OK").arg(index));
+
+                    Sleep(duration);
+                }
+                else
+                {
+                    ui->statusBar->showMessage(QString("Teilstrecke %1 fehlerhaft").arg(index));
+                    simulationWidget->setText(QString("Teilstrecke %1 fehlerhaft").arg(index), Qt::red);
+                    failedMap.insert(index,list);
+
+                    SectionPipeDialog->insertRow(list, index, false);
+                    SectionPipeDialog->setLabelStatus(QString("Teilstrecke %1 fehlerhaft").arg(index));
+                }
+                index++;
+
+                foreach(GPipe *s, list)
+                {
+                    if(s->cold())
+                        s->setColor(Qt::darkGreen);
+                    else
+                        s->setColor(Qt::red);
+                    scene->update();
+                }
+            }
         }
     }
 
-    return status;
+    if(failedMap.isEmpty())
+        return true;
+    else
+        return false;
 }
+
+void FSAquaWindow::setupPipeObjects(QMap<int, QList<GPipe *> >)
+{
+
+    // Try new
+    QMapIterator<int, QList<GPipe *>> itn(teilstreckenMap);
+    while (itn.hasNext())
+    {
+        itn.next();
+        QList<GBadObject *> oList;
+        foreach(GPipe *p, itn.value())
+        {
+            p->setColor(Qt::cyan);
+            scene->update();
+            foreach(GBadObject *o, p->badObjectList())
+            {
+                if(!oList.contains(o))
+                    oList << o;
+
+                 updateStatusText(QString("%1: Flow:%2").arg(o->getNr()).arg(oList.size()), p->getPipeEnd());
+            }
+
+            foreach(GBadObject *o, oList)
+            {
+
+                if(p->cold())
+                    p->insertFlow(o->getNr(), o->bdKW(), 0.0);
+
+                if(!p->cold())
+                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+                // Some diffrence
+                if(p->cold() && objectListContains(oList,GBadObject::WSIB))
+                    p->insertFlow(o->getNr(), o->bdKW(), o->bdWW());
+
+                // Connecting pipe from WSIB
+                if(p->cold() && p->containsObjectType(GBadObject::WSIB) && p->type() == GPipe::RGA)
+                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+                if(p->cold() && p->type() == GPipe::RGS && p->getFlowDirection() == "right" && o->getFloorIndex() == p->getFloorIndex() &&
+                        p->getPipeStart().x() > o->getMitte().x() && objectListContains(oList,GBadObject::WSIB))
+                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+
+            }
+
+            p->setGBadObjectList(oList);
+
+            Sleep(duration);
+            if(p->cold())
+                p->setColor(Qt::darkGreen);
+            else
+                 p->setColor(Qt::red);
+
+            scene->update();
+        }
+    }
+}
+
+//    // Setup object's of each pipe
+//    QMapIterator<int, QList<GPipe *>> it(teilstreckenMap);
+//    while (it.hasNext())
+//    {
+//        it.next();
+//        QList<GBadObject *> oList;
+//        foreach(GPipe *p, it.value())
+//        {
+
+//            p->setColor(Qt::cyan);
+
+//            foreach(GBadObject *o, p->badObjectList())
+//            {
+//                if(!oList.contains(o))
+//                {
+//                    oList << o;
+//                    if(p->cold())
+//                        p->insertFlow(o->getNr(), o->bdKW(), 0.0);
+//                    else
+//                        p->insertFlow(o->getNr(), 0.0, o->bdWW());
+//               }
+//            }
+
+
+
+//            if(p->type() == GPipe::RGS && !previousPipe(p).isEmpty())
+//            {
+//                if(previousPipe(p).first()->type() == GPipe::RGA)
+//                {
+//                    GPipe *pre = previousPipe(p).first();
+//                    if(pre->badObjectList().size() == 1)
+//                    {
+//                        GBadObject *obj = pre->badObjectList().first();
+//                        if(oList.contains(obj))
+//                            oList.removeOne(obj);
+//                    }
+//                }
+//            }
+
+//            foreach(GBadObject *o, oList)
+//            {
+//                o->setSelected(true);
+
+
+//                if(p->cold() && objectListContains(oList, GBadObject::WSIB) )
+//                    p->insertFlow(o->getNr(), o->bdKW(), o->bdWW());
+
+//                if(p->cold() && objectListContains(oList, GBadObject::WSIB) && p->type() == GPipe::RGA)
+//                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+//                if(p->cold() && objectListContains(oList, GBadObject::WSIB) && p->type() == GPipe::RGS &&
+//                        p->getPipeEnd().x() > o->getMitte().x() && o->getFloorIndex() == p->getFloorIndex() )
+//                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+//                if(p->cold() && !objectListContains(oList, GBadObject::WSIB))
+//                     p->insertFlow(o->getNr(), o->bdKW(), 0.0);
+
+//                if(!p->cold())
+//                    p->insertFlow(o->getNr(), 0.0, o->bdWW());
+
+//                if(p->cold() && objectListContains(oList, GBadObject::DHE) &&  !objectListContains(oList, GBadObject::WSIB) )
+//                    p->insertFlow(o->getNr(), o->bdWW(), o->bdWW());
+
+//                double bd = o->bdKW()+o->bdWW();
+//                updateStatusText(QString("%1: Flow:%2").arg(o->getNr()).arg(bd), p->getPipeEnd());
+
+//                o->setSelected(false);
+//            }
+
+
+//            p->setGBadObjectList(oList);
+//            scene->update();
+//            Sleep(duration);
+
+
+//            // Reset color
+//            foreach(GPipe *p, it.value())
+//            {
+//                if(p->cold())
+//                    p->setColor(Qt::darkGreen);
+//                else
+//                     p->setColor(Qt::red);
+//                scene->update();
+//            }
+
+//            SectionPipeDialog->setLabelStatus(QString("Pipe %1 done").arg(p->getNr()));
+//            simulationWidget->setText(QString("Pipe %1 done").arg(p->getNr()), QColor(0,85,127));
+//        }
+
+//        SectionPipeDialog->setLabelStatus(QString("Teilstrecke %1 OK").arg(it.key()));
+//        simulationWidget->setText(QString("Teilstrecke %1 OK").arg(it.key()), QColor(0,85,127));
+
+//    }
+//}
+
+//bool FSAquaWindow::testPipeLength(QList<GPipe *> pList)
+//{
+
+//    bool status = true;
+//    foreach(GPipe *p, pList){
+//        if(p->getMeter() <= 0.0){
+//            status = false;
+//            p->setColor(Qt::magenta);
+//            scene->update();
+//        }
+//    }
+
+//    return status;
+//}
 
 bool FSAquaWindow::containsMainPipe(QList<GPipe *> pipeList)
 {
@@ -3115,10 +3851,30 @@ void FSAquaWindow::updateMouseText(QPointF pos)
     if(ui->actionShowMousePos->isChecked()){
         mouseText = new QGraphicsTextItem(QString("Höhe: %1 m").arg(pos.y()/100 + floorThickness/100 - 0.3));
         scene->addItem(mouseText);
+        mouseText->setDefaultTextColor(QColor(0,85,127));
         mouseText->setTransform( ui->editorView->transform());
-        //mouseText->setPos(scene->sceneRect().width()/2, scene->sceneRect().height()/2);
         mouseText->setPos(pos.x(), pos.y()+mouseText->boundingRect().height());
     }
+}
+
+void FSAquaWindow::updateStatusText(const QString text, QPointF pos)
+{
+    if(statusText != nullptr)
+        scene->removeItem(statusText);
+
+    statusText = new QGraphicsTextItem(text);
+    scene->addItem(statusText);
+    statusText->setDefaultTextColor(QColor(0,85,127));
+    statusText->setTransform( ui->editorView->transform());
+    statusText->setPos(pos.x(), pos.y() + statusText->boundingRect().height());
+
+}
+
+void FSAquaWindow::removeStatusText()
+{
+    if(statusText != nullptr)
+        scene->removeItem(statusText);
+    scene->update();
 }
 
 void FSAquaWindow::updateProxiWidgets()
@@ -3131,6 +3887,83 @@ void FSAquaWindow::updateProxiWidgets()
 
     if(simulationRect->isVisible())
         simulationRect->setPos( visibleSceneRect.width() / 2 - (simulationRect->boundingRect().width()/2) , visibleSceneRect.bottom() - 40 );
+}
+
+void FSAquaWindow::calculateDINEN806()
+{
+
+    if(calculatedPipeMap.isEmpty())
+        return;
+
+    sendMessage(tr("Calculation pipe DIN EN 806"));
+    EN806 en806;
+
+    QMapIterator<int, QList<int> >it(calculatedPipeMap);
+    while (it.hasNext()) {
+        it.next();
+
+        QString material = pipe(it.value().first())->getMaterial();
+
+        double meter = 0.0;
+        foreach(int nr, it.value())
+            meter += pipe(nr)->getMeter();
+
+        int lu = 0;
+        foreach(GBadObject *o, pipe(it.value().first())->badObjectList() )
+            lu += o->lu();
+
+        double da = en806.getDA(material, lu, lu, meter);
+        int dn = FSAquaWindow::getDN(da, material);
+
+        foreach(int nr, it.value())
+            pipe(nr)->setDn(dn);
+
+        qDebug() << "---------------------";
+        qDebug() << "Index:" << it.key();
+        qDebug() << "Ma:" << material;
+        qDebug() << "LU:" << lu;
+        qDebug() << "DN:" << dn;
+        qDebug() << "Da:" << da;
+        qDebug() << "---------------------";
+
+    }
+
+    sendMessage(tr("Calculation DIN EN 806 successfully done!"));
+    Sleep(duration);
+
+    removeStatusText();
+    hideMessage();
+    pipeCalculated = true;
+}
+
+void FSAquaWindow::calculateDIN1988()
+{
+    sendMessage(tr("Calculation DIN 1988"));
+    setupCalculatedMap();
+}
+
+void FSAquaWindow::sendMessage(const QString &message)
+{
+
+    SectionPipeDialog->setLabelStatus(message);
+    ui->statusBar->showMessage(message);
+    if(!simulationRect->isVisible()){
+        simulationRect->show();
+        QRect viewportRect(0, 0, ui->editorView->viewport()->width(), ui->editorView->viewport()->height());
+        QRectF visibleSceneRect = ui->editorView->mapToScene(viewportRect).boundingRect();
+        simulationRect->setPos( visibleSceneRect.width() / 2 - (simulationRect->boundingRect().width()/2) , visibleSceneRect.bottom() - 40 );
+    }
+
+    simulationWidget->setText(message, QColor(0,85,127));
+}
+
+void FSAquaWindow::hideMessage()
+{
+    SectionPipeDialog->setLabelStatus("");
+    ui->statusBar->showMessage("");
+    if(simulationRect->isVisible()){
+        simulationRect->hide();
+    }
 }
 
 void FSAquaWindow::updateFlow()

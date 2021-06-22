@@ -109,6 +109,7 @@ public:
     QPointF connectCold();
     QPointF connectHot();
 
+    QPointF getMitte();
     QPointF mitte();
     QVariant region();
 
@@ -129,6 +130,9 @@ public:
 
     QPointF leftPos();
     QPointF rightPos();
+
+    qreal getAnschlussHoehe() const;
+    void setAnschlussHoehe(const qreal &anschlussHoehe);
 
 signals:
     void objectHasDeleted(GBadObject *obj);
@@ -155,6 +159,7 @@ private:
     qreal m_din_bdKW;           // Berechnungsdurchfluss Kaltwasser nach DIN
     qreal m_din_bdWW;           // Berechnungsdurchfluss Warmwasser nach DIN
     qreal m_din_md;             // Mindestfließdruck nach DIN
+    qreal m_anschlussHoehe;     // Anschlusshöhe in Meter
 
     qreal m_bdKW;               // Berechnungsdurchfluss Kaltwasser
     qreal m_bdWW;               // Berechnungsdurchfluss Warmwasser

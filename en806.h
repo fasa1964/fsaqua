@@ -1,13 +1,15 @@
 #ifndef EN806_H
 #define EN806_H
 
+#include <QString>
 
 class EN806
 {
 public:
     EN806();
 
-    double getDA(int mindex, int lu, int luMax, double len);
+    //double getDA(int mindex, int lu, int luMax, double len);
+    double getDA(const QString &material, int lu, int luMax, double len);
 
 
     double daKupferEN806(int lu, int luMax, double len);

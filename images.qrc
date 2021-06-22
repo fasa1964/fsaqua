@@ -109,5 +109,6 @@
         <file>formeln/v2.png</file>
         <file>buttonicons/calc.png</file>
         <file>buttonicons/calc.svg</file>
+        <file>formeln/DVEinzelwiderstaende.svg</file>
     </qresource>
 </RCC>

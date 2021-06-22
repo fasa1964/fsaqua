@@ -1,4 +1,4 @@
-#ifndef PIPELISTWIDGET_H
+﻿#ifndef PIPELISTWIDGET_H
 #define PIPELISTWIDGET_H
 
 #include <QWidget>
@@ -22,15 +22,17 @@ public:
     void clearList();
     void setLabelStatus(const QString &text);
     void setText(int row, int column, const QString &text);
-    void setFlow(int row, int column, double value);
-    void setLu(int row, int column, int value);
+    void setValue(int sectionPipeNr, int column, double value, const QString &einheit);
 
     // Testing for saving and loading the project
-    QMap<QString, QVariant> getPipeSectionInfos();
-    void setPipeSectionInfos(  QMap<int, QStringList>map );
+//    QMap<QString, QVariant> getPipeSectionInfos();
+//    void setPipeSectionInfos(  QMap<int, QStringList>map );
+
+signals:
+    void rowSelect(int row, int column);
 
 private slots:
-    void cellClicked(int row, int);
+    void cellClicked(int row, int column);
 
 private:
     Ui::PipeListWidget *ui;

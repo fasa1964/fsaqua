@@ -44,6 +44,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
        setCold(true);       // Has cold water connection
        setHot(true);        // Has hot water connection
 
+       setAnschlussHoehe(0.55); // Anschlusshöhe in Meter
+
     }
 
     if(Type == WC)
@@ -68,6 +70,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(1.20); // Anschlusshöhe in Meter
     }
 
     if(Type == WCDS)
@@ -92,6 +96,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(20);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(1.2); // Anschlusshöhe in Meter
 
     }
 
@@ -118,6 +124,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
 
+        setAnschlussHoehe(0.75); // Anschlusshöhe in Meter
+
 
     }
 
@@ -143,6 +151,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
+
+        setAnschlussHoehe(1.25); // Anschlusshöhe in Meter
     }
 
     if(Type == SW)
@@ -167,6 +177,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
+
+        setAnschlussHoehe(0.35); // Anschlusshöhe in Meter
     }
 
     if(Type == WM)
@@ -191,6 +203,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(1.10); // Anschlusshöhe in Meter
     }
 
     if(Type == GS)
@@ -215,6 +229,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(0.55); // Anschlusshöhe in Meter
     }
 
     if(Type == UR)
@@ -239,6 +255,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(1.2); // Anschlusshöhe in Meter
     }
 
     if(Type == AGAV)
@@ -263,6 +281,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(1.15); // Anschlusshöhe in Meter
     }
 
     if(Type == SP)
@@ -287,6 +307,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
+
+        setAnschlussHoehe(0.55); // Anschlusshöhe in Meter
     }
 
     if(Type == AV)
@@ -311,6 +333,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(false);        // Has hot water connection
+
+        setAnschlussHoehe(0.95); // Anschlusshöhe in Meter
     }
 
     if(Type == DHE)
@@ -335,6 +359,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
+
+        setAnschlussHoehe(0.35); // Anschlusshöhe in Meter
     }
 
     if(Type == WSIB)
@@ -359,6 +385,8 @@ GBadObject::GBadObject(GBadObjectType TYPE, QGraphicsItem *parent) :
         setDn(15);           // Anschlussnennweite DN
         setCold(true);       // Has cold water connection
         setHot(true);        // Has hot water connection
+
+        setAnschlussHoehe(1.8); // Anschlusshöhe in Meter
     }
 
     if(svgItem != nullptr){
@@ -611,6 +639,16 @@ void GBadObject::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     menu.exec( event->screenPos() );
 }
 
+qreal GBadObject::getAnschlussHoehe() const
+{
+    return m_anschlussHoehe;
+}
+
+void GBadObject::setAnschlussHoehe(const qreal &anschlussHoehe)
+{
+    m_anschlussHoehe = anschlussHoehe;
+}
+
 bool GBadObject::displayNr() const
 {
     return m_displayNr;
@@ -723,6 +761,12 @@ QPointF GBadObject::connectHot()
      }
 
      return mapToScene(point);
+}
+
+QPointF GBadObject::getMitte()
+{
+    QPointF point = mitte();
+    return mapToScene(point);
 }
 
 QPointF GBadObject::mitte()

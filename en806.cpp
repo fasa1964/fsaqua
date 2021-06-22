@@ -1,36 +1,69 @@
 #include "en806.h"
 
+
+
 EN806::EN806()
 {
 
 }
 
-double EN806::getDA(int mindex, int lu, int luMax, double len)
+//double EN806::getDA(int mindex, int lu, int luMax, double len)
+//{
+//    double da = 0;
+
+//    if(mindex == 0) // copper
+//        da = daKupferEN806(lu, luMax, len);
+
+//    if(mindex == 1) // stainless steel
+//        da = daEdelstahlEN806(lu, luMax, len);
+
+//    if(mindex == 2) // pex-al (verbund)
+//        da = daPEXAL_EN806(lu, luMax, len) ;
+
+//    if(mindex == 3) // pe-x
+//        da = daPEX_EN806(lu, luMax, len);
+
+//    if(mindex == 4) // pb
+//        da = daPB_EN806(lu, luMax, len);
+
+//    if(mindex == 5) // pp
+//        da = daPP_EN806(lu, luMax, len);
+
+//    if(mindex == 6) // PVC
+//        da = daPVC_EN806(lu, luMax, len);
+
+//    if(mindex == 7) // verz. Stahl
+//        da = daVerzStahlEN806(lu, luMax, len);
+
+//    return da;
+//}
+
+double EN806::getDA(const QString &material, int lu, int luMax, double len)
 {
     double da = 0;
 
-    if(mindex == 0) // copper
+    if(material == "Kupfer") // copper
         da = daKupferEN806(lu, luMax, len);
 
-    if(mindex == 1) // stainless steel
+    if(material == "Edelstahl") // stainless steel
         da = daEdelstahlEN806(lu, luMax, len);
 
-    if(mindex == 2) // pex-al (verbund)
+    if(material == "Edelstahl") // pex-al (verbund)
         da = daPEXAL_EN806(lu, luMax, len) ;
 
-    if(mindex == 3) // pe-x
+    if(material == "PE-X") // pe-x
         da = daPEX_EN806(lu, luMax, len);
 
-    if(mindex == 4) // pb
+    if(material == "PB") // pb
         da = daPB_EN806(lu, luMax, len);
 
-    if(mindex == 5) // pp
+    if(material == "PP") // pp
         da = daPP_EN806(lu, luMax, len);
 
-    if(mindex == 6) // PVC
+    if(material == "PVC") // PVC
         da = daPVC_EN806(lu, luMax, len);
 
-    if(mindex == 7) // verz. Stahl
+    if(material == "verz. Stahl") // verz. Stahl
         da = daVerzStahlEN806(lu, luMax, len);
 
     return da;
@@ -41,7 +74,7 @@ double EN806::daKupferEN806(int lu, int luMax, double len)
     double da = 0;
 
     if(lu == 1){
-       if(len <= 20)
+       if(len <= 20.0)
         return da = 12;
        else
         return da = 15;
