@@ -42,6 +42,7 @@ void PipeListWidget::insertRow(const QList<GPipe *> &list, int nr, bool ok)
     QTableWidgetItem *itemGeo = new QTableWidgetItem("");
     QTableWidgetItem *itemPmin = new QTableWidgetItem("");
     QTableWidgetItem *itemdPap = new QTableWidgetItem("");
+    QTableWidgetItem *itemdRV = new QTableWidgetItem("");
 
 
     if(ok)
@@ -58,6 +59,7 @@ void PipeListWidget::insertRow(const QList<GPipe *> &list, int nr, bool ok)
     ui->tableWidget->setItem(row,3,itemGeo);
     ui->tableWidget->setItem(row,4,itemPmin);
     ui->tableWidget->setItem(row,5,itemdPap);
+    ui->tableWidget->setItem(row,6,itemdRV);
 
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->update();
@@ -156,10 +158,10 @@ void PipeListWidget::cellClicked(int row, int column)
 
 void PipeListWidget::setupTableWidget()
 {
-    ui->tableWidget->setColumnCount(6);
+    ui->tableWidget->setColumnCount(7);
 
     QStringList header;
-    header << "Nr" << "Connection" << "Length" << "dP(geo)" << "PminFl" << "dP(ap)";
+    header << "Nr" << "Connection" << "Length" << "dP(geo)" << "PminFl" << "dP(ap)" << "RV";
 
     ui->tableWidget->setHorizontalHeaderLabels(header);
     ui->tableWidget->resizeColumnsToContents();

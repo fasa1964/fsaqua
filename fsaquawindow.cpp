@@ -13,10 +13,12 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QPair>
+#include <QDoubleSpinBox>
 
 #include <gbadobjectinfodialog.h>
 #include <gpipeinfodialog.h>
 #include <garmaturinfodialog.h>
+
 
 #include <QDebug>
 
@@ -98,7 +100,12 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     formvs = new FormFormularVs();
     formvs->hide();
 
+    dlgCalulatedPipe = new DialogCalculatedPipe(0);
+    dlgCalulatedPipe->setCaptionText(ui->dinBox->currentText());
+    connect(dlgCalulatedPipe, &DialogCalculatedPipe::calculatedPipeClicked, this, &FSAquaWindow::calculatedPipeClicked);
+
     readSettings();
+
 
     // Main menu
     connect(ui->actionClose , &QAction::triggered, this, &FSAquaWindow::closeApplication);
@@ -118,7 +125,8 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     connect(ui->buildingBox, &QComboBox::currentTextChanged, this, &FSAquaWindow::buildingArtChanged );
     connect(ui->editorView->verticalScrollBar(), &QScrollBar::sliderMoved , this, &FSAquaWindow::scrollBarMoved );
     connect(ui->editorView->horizontalScrollBar(), &QScrollBar::sliderMoved , this, &FSAquaWindow::scrollBarMoved );
-
+    connect(ui->spitzendurchflussBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+        [=](double d){ spitzendurchflussBoxValueChanged(d); });
 
     // Tools
     connect(tools, &FormTools::dropObjectSelcted, this, &FSAquaWindow::dropObjectSelcted);
@@ -191,11 +199,16 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     ui->editorView->update();
     scene->update();
 
+    // Graphical meassure
     measureText = new QGraphicsTextItem("");
     measureLine = new QGraphicsLineItem();
+    measureHelpLine = new QGraphicsLineItem();
+
     scene->addItem(measureText);
     scene->addItem(measureLine);
+    scene->addItem(measureHelpLine);
     measureLine->hide();
+    measureHelpLine->hide();
     measureText->hide();
 }
 
@@ -229,6 +242,7 @@ void FSAquaWindow::closeApplication()
 {
     saveSettings();
 
+    dlgCalulatedPipe->close();
     tools->close();
     SectionPipeDialog->close();
 
@@ -312,11 +326,12 @@ void FSAquaWindow::scrollBarMoved(int)
     updateProxiWidgets();
 }
 
-void FSAquaWindow::on_spitzendurchflussBox_valueChanged(double)
+void FSAquaWindow::spitzendurchflussBoxValueChanged(double)
 {
     if( pipeTested && !statusLoading && pipeInstalled ){
         pipeTested = false;
         tools->setBlinkButton(true, "test");
+        tools->enableCalculateButton(false);
     }
 }
 
@@ -738,7 +753,7 @@ void FSAquaWindow::actionLoadProject()
             if(pipeCalculated)
             {
                 QMap<QString, QVariant> vMap;
-                vMap = map.value("pipecalculated").toMap();
+                vMap = map.value("calculatedpipemap").toMap();
                 QMapIterator<QString, QVariant> it(vMap);
                 while (it.hasNext()) {
                     it.next();
@@ -752,6 +767,11 @@ void FSAquaWindow::actionLoadProject()
                     }
                     calculatedPipeMap.insert(nr, pnrList);
                 }
+
+
+                dlgCalulatedPipe->setCaptionText(ui->dinBox->currentText());
+                dlgCalulatedPipe->show();
+                setupDialogCalulatedPipe(calculatedPipeMap);
             }
 
             updateHeightPressureDiff();
@@ -807,6 +827,10 @@ void FSAquaWindow::clearScene()
     teilstreckenMap.clear();
     SectionPipeDialog->clearList();
     calculatedPipeMap.clear();
+    dlgCalulatedPipe->clearList();
+
+    SectionPipeDialog->hide();
+    dlgCalulatedPipe->hide();
 
     deletePipeButtonClicked();
     deleteObjects();
@@ -989,6 +1013,7 @@ void FSAquaWindow::installButtonClicked()
 {
 
     connectingPipeMap.clear();
+    calculatedPipeMap.clear();
 
     // Remove all Armatur
     foreach(GArmatur *a, armaturList)
@@ -1080,6 +1105,7 @@ void FSAquaWindow::testInstallation()
     teilstreckenMap.clear();
     calculatedPipeMap.clear();
     SectionPipeDialog->clearList();
+    dlgCalulatedPipe->clearList();
 
     // Check if any pipe without length and set material
     sendMessage(tr("Check pipe length!"));
@@ -1141,7 +1167,6 @@ void FSAquaWindow::testInstallation()
         simulationRect->hide();
         pipeTested = true;
         tools->setBlinkButton(false, "test");
-
         tools->enableCalculateButton(true);
         return;
     }
@@ -1155,6 +1180,9 @@ void FSAquaWindow::testInstallation()
 void FSAquaWindow::calculateInstallation()
 {
     sendMessage(tr("Check all valves!"));
+    calculatedPipeMap.clear();
+    dlgCalulatedPipe->clearList();
+    dlgCalulatedPipe->hide();
 
     // Turn off the armatur status
     showArmaturStatus(false);
@@ -1195,6 +1223,21 @@ void FSAquaWindow::calculateInstallation()
         return;
     }
 
+    // Continue with section pipe for calculating pressure loss
+    QMapIterator<int, QList<GPipe *>>it(teilstreckenMap);
+    while (it.hasNext()) {
+        it.next();
+        QList<GPipe *>pList;
+        foreach(GPipe *p, pList)
+        {
+
+        }
+
+        double rv = getRv(it.value());
+        SectionPipeDialog->setValue( it.key(), 6, rv, "hPa");
+    }
+
+
     sendMessage(tr("Setup all pipes!"));
     calculatedPipeMap = setupCalculatedMap();
     resetPipeColor();
@@ -1204,6 +1247,10 @@ void FSAquaWindow::calculateInstallation()
         calculateDIN1988();
     else
         calculateDINEN806();
+
+    dlgCalulatedPipe->setCaptionText(ui->dinBox->currentText());
+    dlgCalulatedPipe->show();
+    setupDialogCalulatedPipe(calculatedPipeMap);
 
 }
 
@@ -1463,9 +1510,6 @@ void FSAquaWindow::leftMouseButtonClicked(QPointF mpos)
                 p->setColor(Qt::red);
 
         }
-
-        foreach(QGraphicsItem *item, measureList)
-            scene->removeItem(item);
 
         scene->update();
     }
@@ -2085,7 +2129,7 @@ double FSAquaWindow::pressureLossArmatur(GArmatur *arm)
 
 void FSAquaWindow::armaturDNHasBeenChanged(GArmatur *valve)
 {
-    int result = QMessageBox::question(this, tr("Armatur"), tr("The DN of armatur has been chanded.\n"
+    int result = QMessageBox::question(this, tr("Armatur"), tr("The DN of armatur has been changed.\n"
                  "Do you want to equate all armaturs of this pipe?"), QMessageBox::No | QMessageBox::Yes);
 
     if(result == QMessageBox::Yes)
@@ -2103,21 +2147,28 @@ void FSAquaWindow::armaturDNHasBeenChanged(GArmatur *valve)
     }
 }
 
+
 void FSAquaWindow::rowSelect(int row, int column)
 {
     QList<GPipe *> pList = teilstreckenMap.value(row);
     resetPipeColor();
 
-    qDebug() << "Length: "<< getPipeListLength(pList);
-    qDebug() << "hGeo: "<< getDPgeo(pList);
-
     foreach(GPipe *p, pList)
         p->setColor(Qt::cyan);
+
+    if(measureText->isVisible())
+        measureText->setVisible(false);
+
+    if(measureLine->isVisible())
+        measureLine->setVisible(false);
+
+    if(measureHelpLine->isVisible())
+        measureHelpLine->setVisible(false);
 
     scene->update();
 
 
-    if(column == 3) // dP geo
+    if(column == 3) // show graphical meassure
     {
 
         GPipe *mp = pipe(0);
@@ -2136,51 +2187,64 @@ void FSAquaWindow::rowSelect(int row, int column)
         double floorHeight = (floorList.at(floorindex)->scenePos().y() - floorThickness + 10.0)  / 100.0;
 
 
-        double hMainPipe = (getHeightDiff(QPointF(0,0),pos1)- (floorThickness+10)) / 100.0;
+        double hMainPipe = (getHeightDiff(QPointF(0,0),pos1) - (floorThickness+10)) / 100.0;
         double hDiff = floorHeight - hMainPipe + pipeHeight;
-        double density = pList.first()->density();      // kg/qm
-        double g = 9.81;
-        double pGeo = density * g * hDiff / 100.0;      // hPa
+//        double density = pList.first()->density();      // kg/qm
+//        double g = 9.81;
+//        double pGeo = density * g * hDiff / 100.0;      // hPa
 
-        qDebug() << "Main pipe height: " << hMainPipe;
-        qDebug() << "Floor height: " << floorHeight;
-        qDebug() << "Height diff: " << hDiff;
-        qDebug() << "AH: " << pipeHeight;
-        qDebug() << "Pgeo: " << pGeo;
+//        qDebug() << "Main pipe height: " << hMainPipe;
+//        qDebug() << "Floor height: " << floorHeight;
+//        qDebug() << "Height diff: " << hDiff;
+//        qDebug() << "AH: " << pipeHeight;
+//        qDebug() << "Pgeo: " << pGeo;
 
+        QPen pen;
+        pen.setColor(QColor(41,128,185));
+        pen.setWidthF(1.0);
+        measureLine->setPen(pen);
 
+        QLineF ln;
+        ln.setP2(  mp->getPipeStart().toPoint() ); // Main pipe
+        ln.setP1( QPoint( mp->getPipeStart().toPoint().x(), pos2.y() ) );
+        measureLine->setLine(ln);
 
+        QLineF hln;
+        hln.setP2( QPoint( mp->getPipeStart().toPoint().x(), pList.first()->scenePos().y() ) ); // Main pipe
+        hln.setP1( pList.first()->scenePos() );
+        measureHelpLine->setLine(hln);
 
+        QString s = QString("%1m").arg( hDiff );
+//        QChar result = checkSum(dle);
+//        QString form = QString("%1").arg( QChar(0x16);//" (d*g*hgeo)";
+        measureText->setPlainText(s);
+        measureText->setTransform( ui->editorView->transform() );
+        measureText->setPos( mp->getPipeStart().x(),  ln.length()/2 + measureText->boundingRect().height()+50);
+        measureText->setDefaultTextColor(QColor(41,128,185));
+        measureText->setScale(1.2);
 
-//        foreach(QGraphicsItem *item, measureList)
-//            scene->removeItem(item);
+        if(!measureText->isVisible())
+            measureText->setVisible(true);
 
-//        QPen pen;
-//        pen.setColor(QColor(41,128,185));
-//        pen.setWidthF(1.0);
-//        qreal ah = pList.first()->badObjectList().first()->getAnschlussHoehe() * 100;
-//        qreal posY = floorList.at(pList.first()->badObjectList().first()->getFloorIndex())->scenePos().y() + floorThickness + ah;
+        if(!measureLine->isVisible())
+            measureLine->setVisible(true);
 
+        if(!measureHelpLine->isVisible())
+            measureHelpLine->setVisible(true);
 
-//        QLineF lne;
-//        lne.setP2(  pList.last()->getPipeStart().toPoint() ); // Main pipe
-//        lne.setP1( QPoint( pList.last()->getPipeStart().toPoint().x(),  posY ) );
-
-//        QString s = QString("%1m").arg( getHeightDiff(lne.p1(), lne.p2())/100 );
-//        QGraphicsTextItem *text = new QGraphicsTextItem(s);
-//        QGraphicsLineItem *line = new QGraphicsLineItem(lne);
-
-//        scene->addItem(line);
-//        scene->addItem(text);
-
-//        line->setPen(pen);
-//        text->setDefaultTextColor(QColor(41,128,185));
-//        //text->setRotation(180);
-//        text->setPos(pList.last()->getPipeStart().x(), posY/2);
-//        text->setTransform( ui->editorView->transform() );
-//        scene->update();
-//        measureList << line << text;
     }
+}
+
+void FSAquaWindow::calculatedPipeClicked(int pipeNr)
+{
+    resetPipeColor();
+    QList<int> iList = calculatedPipeMap.value(pipeNr);
+    foreach(int nr, iList){
+        pipe(nr)->setColor(Qt::cyan);
+    }
+    // Focus selected pipe in center
+    ui->editorView->centerOn( pipe( iList.first() )->scenePos());
+
 }
 
 void FSAquaWindow::moveToRight(int strangIndex)
@@ -2420,6 +2484,88 @@ double FSAquaWindow::getDPgeo(QList<GPipe *> pList)
     return pGeo;
 }
 
+double FSAquaWindow::getPminFL(QList<GPipe *> pList)
+{
+    double pmin = 0.0;
+    foreach(GPipe *p, pList){
+        if(p->type() == GPipe::RGA && p->badObjectList().size() == 1){
+            pmin = p->badObjectList().first()->md();
+            break;
+        }
+    }
+
+    return pmin;
+}
+
+double FSAquaWindow::getDPap(QList<GPipe *> pList)
+{
+    double pl = 0.0;
+    QList<int> iList;
+    foreach(GPipe *p, pList)
+        iList << p->getNr();
+
+    foreach(GArmatur *a, armaturList){
+        if( iList.contains( a->pipeNr() )){
+            pl += a->getPessureLoss();
+        }
+    }
+
+    return pl;
+}
+
+
+// Returns the available pressure loss per section pipe
+// Equation 10 from DIN 1988
+double FSAquaWindow::getRv(QList<GPipe *> pList)
+{
+
+    double a = getPropotionResistance(pList);   // Anteil der Druckverluste durch Einzelwiderstände in %
+    double lges = getPipeListLength(pList);     // Länge der Teilstrecke
+    double pgeo = getDPgeo(pList);              // Druckverlust durch geodätichem Höhenunterschied in hPa
+    double pap = getDPap(pList);                // Druckverluste durch Ventile und Apparate in hPa
+    double pmin = ui->mvdBox->value();          // Der Mindestversorgungsßdruck an der Hausanschlussleitung in hPa
+    double pminfl = getPminFL(pList);           // Der Mindestfließdruck vom Objekt in hPa
+    double phal = 200;                          // Der Druckverlust in der Hausanschlussleitung in hPa
+
+    double pgesv = pmin - pgeo - phal - pap - pminfl;    // verfügbare Druckdifferenz equation 11 from DIN 1988
+
+    double rv = (1-a/100) / lges * pgesv;
+    return rv;
+}
+
+double FSAquaWindow::getPR(GPipe *p)
+{
+    double r = getR(p);
+    return r * p->getMeter();
+}
+
+double FSAquaWindow::getR(GPipe *p)
+{
+    double v = p->getFlowSpeed();       // Rechnerische Strömungsgeschwindigkeit
+    double density = p->density();      // Dichte des Wassers
+    int dn = p->getDn();
+    QString material = p->getMaterial();
+    double k = kWert(material);
+    double di = diameterInnside(dn, material);
+    double dynVisc = dynamicViscosity(p->cold());
+    double kinVisc = kinematicViscosity(dynVisc, density);
+    double re = din1988.reynolds(di, v, kinVisc);
+    double r = din1988.pressureLossPerMeter(re, k, di, v, density);
+    return r;
+}
+
+
+double FSAquaWindow::getPropotionResistance(QList<GPipe *> pList)
+{
+    double percent = 0.0;
+
+    foreach(GPipe *p, pList)
+        percent += p->getTotalResistance();
+    percent = percent / pList.size();
+
+    return percent;
+}
+
 int FSAquaWindow::getPipeLU(GPipe *pipe)
 {
     int lu = 0;
@@ -2508,33 +2654,61 @@ QMap<int, QList<int> > FSAquaWindow::setupCalculatedMap()
     }
 
     foreach(GPipe *p, pipeList){
-        if(!iList.contains(p->getNr())){
-            QList<int> il;
-            il << p->getNr();
-            iList << p->getNr();
-            p->setColor(Qt::magenta);
-            QString text = QString("Index: %1 Pipe-Nr:%2").arg(index).arg(p->getNr()) + " inserted";
-            updateStatusText(text, p->scenePos());
-            scene->update();
-            Sleep(duration);
-            map.insert(index, il);
-            index++;
+        if(!p->getMarker()){
+            if(!iList.contains(p->getNr())){
+                QList<int> il;
+                il << p->getNr();
+                iList << p->getNr();
+                p->setColor(Qt::magenta);
+                QString text = QString("Index: %1 Pipe-Nr:%2").arg(index).arg(p->getNr()) + " inserted";
+                updateStatusText(text, p->scenePos());
+                scene->update();
+                Sleep(duration);
+                map.insert(index, il);
+                index++;
+            }
         }
     }
 
-    QMapIterator<int, QList<int>>itc(map);
-    while (itc.hasNext()) {
-        itc.next();
-        qDebug() << "----------------------";
-        qDebug() << "Key: " << itc.key();
-        foreach(int pnr, itc.value())
-            qDebug() << pnr << ":";
+//    QMapIterator<int, QList<int>>itc(map);
+//    while (itc.hasNext()) {
+//        itc.next();
+//        qDebug() << "----------------------";
+//        qDebug() << "Key: " << itc.key();
+//        foreach(int pnr, itc.value())
+//            qDebug() << pnr << ":";
 
-    }
+//    }
 
     removeStatusText();
     resetPipeColor();
     return map;
+}
+
+void FSAquaWindow::setupDialogCalulatedPipe(QMap<int, QList<int> > map)
+{
+    QMapIterator<int, QList<int> >it(map);
+    while (it.hasNext()) {
+        it.next();
+
+        int nr = it.key();
+        int lu = getPipeLU( pipe(it.value().first() ));
+        int dn = pipe(it.value().first())->getDn();
+        double vr = pipe(it.value().first())->getFlow();
+        double vs = getPeakFlow( pipe(it.value().first()) );
+        double meter = 0.0;
+
+        QString material = pipe( it.value().first() )->getMaterial();
+        double da = diameterOutside(dn, material);
+
+        QList<int> iList = it.value();
+        foreach(int pnr, iList){
+            meter += pipe(pnr)->getMeter();
+        }
+
+        dlgCalulatedPipe->insertRow(nr, dn, da, 0.0, material, meter, vr, vs, lu);
+
+    }
 }
 
 QList<GPipe *> FSAquaWindow::getStrangMarkerList()
@@ -3782,6 +3956,7 @@ int FSAquaWindow::getFloorIndex(QPointF pos)
     return floorIndex;
 }
 
+
 void FSAquaWindow::resizeFloors()
 {
     foreach(QGraphicsRectItem *f, floorList)
@@ -3889,6 +4064,7 @@ void FSAquaWindow::updateProxiWidgets()
         simulationRect->setPos( visibleSceneRect.width() / 2 - (simulationRect->boundingRect().width()/2) , visibleSceneRect.bottom() - 40 );
 }
 
+
 void FSAquaWindow::calculateDINEN806()
 {
 
@@ -3896,7 +4072,6 @@ void FSAquaWindow::calculateDINEN806()
         return;
 
     sendMessage(tr("Calculation pipe DIN EN 806"));
-    EN806 en806;
 
     QMapIterator<int, QList<int> >it(calculatedPipeMap);
     while (it.hasNext()) {
@@ -3918,13 +4093,13 @@ void FSAquaWindow::calculateDINEN806()
         foreach(int nr, it.value())
             pipe(nr)->setDn(dn);
 
-        qDebug() << "---------------------";
-        qDebug() << "Index:" << it.key();
-        qDebug() << "Ma:" << material;
-        qDebug() << "LU:" << lu;
-        qDebug() << "DN:" << dn;
-        qDebug() << "Da:" << da;
-        qDebug() << "---------------------";
+//        qDebug() << "---------------------";
+//        qDebug() << "Index:" << it.key();
+//        qDebug() << "Ma:" << material;
+//        qDebug() << "LU:" << lu;
+//        qDebug() << "DN:" << dn;
+//        qDebug() << "Da:" << da;
+//        qDebug() << "---------------------";
 
     }
 
@@ -3938,8 +4113,59 @@ void FSAquaWindow::calculateDINEN806()
 
 void FSAquaWindow::calculateDIN1988()
 {
+    if(calculatedPipeMap.isEmpty())
+        return;
+
     sendMessage(tr("Calculation DIN 1988"));
-    setupCalculatedMap();
+
+
+    QMapIterator<int, QList<int> >it(calculatedPipeMap);
+    while (it.hasNext()) {
+        it.next();
+
+        QList<int> iList = it.value();
+        GPipe *p = pipe( iList.first() );
+        double density = p->density();
+        double v = p->getFlowSpeed();
+        QString material = p->getMaterial();
+        double k = kWert(material);
+        bool cold = p->cold();
+        double dynVisc = dynamicViscosity(cold);
+        double kinVisc = kinematicViscosity(dynVisc, density);
+        double di = diameterInnside(15, material);
+        //double RE = getReynolds(v,  di, density, cold );
+        double re = din1988.reynolds(di, v, kinVisc);
+        double resistance = 0.0;
+        double pl = din1988.pressureLossPerMeter(re, k, di ,v, density);
+
+        if(re > 2320){
+            qDebug() << "turbulente Strömung";
+
+
+
+
+        }
+
+        if(re < 2320){
+            qDebug() << "laminare Strömung";
+            resistance = 64/re;
+
+        }
+
+
+        qDebug() << "PL" << pl;
+
+
+    }
+
+
+    sendMessage(tr("Calculation DIN 1988 successfully done!"));
+    Sleep(duration);
+
+    removeStatusText();
+    hideMessage();
+    pipeCalculated = true;
+
 }
 
 void FSAquaWindow::sendMessage(const QString &message)

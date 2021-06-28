@@ -8,16 +8,18 @@ DIN1988300::DIN1988300()
 }
 
 // returns the reynolds-value
-// di = inside diameter, v = flow rate, kinVis = kin. viscosity
-double DIN1988300::reynolds(double di, double vr, double kinVis)
+// di = inside diameter, v = speed flow rate, kinVis = kin. viscosity
+double DIN1988300::reynolds(double di, double v, double kinVis)
 {
     double re;
 
-    re = vr * di / kinVis;
+    re = v * di / kinVis;
 
     return re;
 }
 
+// returns the pressure loss in pipe per meter
+// re = reynold, vm = speed flow rate
 double DIN1988300::pressureLossPerMeter(double re, double kWert, double di, double vm, double dichte)
 {
     double RM = 0.0;      // pressure loss per meter
@@ -65,6 +67,7 @@ double DIN1988300::pressureLossPerMeter(double re, double kWert, double di, doub
 
     return RM;
 }
+
 
 double DIN1988300::rohrreibung(double la, double di, double vm, double dichte)
 {

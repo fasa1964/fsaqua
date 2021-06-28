@@ -39,7 +39,10 @@ SOURCES += \
     simulationsllider.cpp \
     en806.cpp \
     garmatur.cpp \
-    garmaturinfodialog.cpp
+    garmaturinfodialog.cpp \
+    dialogcalculatedpipe.cpp \
+    din1988300.cpp \
+    settingsdialog.cpp
 
 HEADERS += \
         fsaquawindow.h \
@@ -55,7 +58,10 @@ HEADERS += \
     simulationsllider.h \
     en806.h \
     garmatur.h \
-    garmaturinfodialog.h
+    garmaturinfodialog.h \
+    dialogcalculatedpipe.h \
+    din1988300.h \
+    settingsdialog.h
 
 FORMS += \
         fsaquawindow.ui \
@@ -66,7 +72,9 @@ FORMS += \
     acceptwidget.ui \
     pipelistwidget.ui \
     simulationsllider.ui \
-    garmaturinfodialog.ui
+    garmaturinfodialog.ui \
+    dialogcalculatedpipe.ui \
+    settingsdialog.ui
 
 TRANSLATIONS += aqua_de.ts
 

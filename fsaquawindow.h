@@ -7,6 +7,7 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsProxyWidget>
+#include <QPainterPath>
 
 #include <formtools.h>
 #include <gbadobject.h>
@@ -14,11 +15,14 @@
 #include <garmatur.h>
 #include <scene.h>
 #include <formformularvs.h>
+#include <QtMath>
 
 #include <acceptwidget.h>
 #include <pipelistwidget.h>
 #include <simulationsllider.h>
 #include <en806.h>
+#include <din1988300.h>
+#include <dialogcalculatedpipe.h>
 
 #define MAXFLOORS 15
 #define MINSCENEHEIGHT 380
@@ -164,243 +168,321 @@ public:
         return k;
     }
 
-    static double durchmesser(double dn, const QString &material, bool da){
+    static double diameterOutside(double dn, const QString &material){
 
         double d = 0.0;
         if(material == "verz. Stahl")
         {
-            if(da && dn == 10.0)
+            if(dn == 10.0)
                 d = 17.2;
-            if(!da && dn == 10.0)
-                d = 11.5;
-            if(da && dn == 15.0)
-                d = 21.2;
-            if(!da && dn == 15.0)
-                d = 15.2;
-            if(da && dn == 20.0)
+            if(dn == 15.0)
+                d = 21.2;   
+            if(dn == 20.0)
                 d = 26.9;
-            if(!da && dn == 20.0)
-                d = 20.7;
-            if(da && dn == 25.0)
+            if(dn == 25.0)
                 d = 33.7;
-            if(!da && dn == 25.0)
-                d = 26.1;
-            if(da && dn == 32.0)
+            if(dn == 32.0)
                 d = 42.4;
-            if(!da && dn == 32.0)
-                d = 34.8;
-            if(da && dn == 40.0)
+            if(dn == 40.0)
                 d = 48.3;
-            if(!da && dn == 40.0)
-                d = 40.7;
-            if(da && dn == 50.0)
+            if(dn == 50.0)
                 d = 60.3;
-            if(!da && dn == 50.0)
-                d = 51.6;
-            if(da && dn == 65.0)
+            if(dn == 65.0)
                 d = 76.1;
-            if(!da && dn == 65.0)
-                d = 67.2;
-            if(da && dn == 80.0)
+            if(dn == 80.0)
                 d = 88.9;
-            if(!da && dn == 80.0)
-                d = 79.0;
-            if(da && dn == 100.0)
+            if(dn == 100.0)
                 d = 114.3;
-            if(!da && dn == 100.0)
+        }
+        if(material == "Kupfer")
+        {
+            if(dn == 10.0)
+                d = 12.0;
+            if(dn == 12.0)
+                d = 15.0;
+            if(dn == 15.0)
+                d = 18.0;
+            if(dn == 20.0)
+                d = 22.0;
+            if(dn == 25.0)
+                d = 28.0;
+            if(dn == 32.0)
+                d = 35.0;
+            if(dn == 40.0)
+                d = 42.0;
+            if(dn == 50.0)
+                d = 60.3;
+            if(dn == 65.0)
+                d = 76.1;
+            if(dn == 80.0)
+                d = 88.9;
+            if(dn == 100.0)
+                d = 114.3;
+        }
+        if(material == "Edelstahl")
+        {
+            if(dn == 10.0)
+                d = 12.0;
+            if(dn == 12.0)
+                d = 15.0;
+            if(dn == 15.0)
+                d = 18.0;
+            if(dn == 20.0)
+                d = 22.0;
+            if(dn == 25.0)
+                d = 28.0;
+            if(dn == 32.0)
+                d = 35.0;
+            if(dn == 40.0)
+                d = 42.0;
+            if(dn == 50.0)
+                d = 54.0;
+            if(dn == 60.0)
+                d = 64.0;
+            if(dn == 65.0)
+                d = 76.1;
+            if(dn == 80.0)
+                d = 88.9;
+            if(dn == 100.0)
+                d = 108.0;
+        }
+        if(material == "PP" || material == "PB" || material == "PVC")
+        {
+            if(dn == 10.0)
+                d = 12.0;
+            if(dn == 12.0)
+                d = 16.0;
+            if(dn == 15.0)
+                d = 20.0;
+            if(dn == 20.0)
+                d = 25.0;
+            if(dn == 25.0)
+                d = 32.0;
+            if(dn == 32.0)
+                d = 40.0;
+            if(dn == 40.0)
+                d = 50.0;
+            if(dn == 50.0)
+                d = 63.0;
+            if(dn == 65.0)
+                d = 75.0;
+            if(dn == 80.0)
+                d = 90.0;
+            if(dn == 100.0)
+                d = 110.0;
+        }
+        if(material == "PEXAL Verbund")
+        {
+            if(dn == 10.0)
+                d = 12.0;
+            if(dn == 12.0)
+                d = 16.0;
+            if(dn == 15.0)
+                d = 20.0;
+            if(dn == 20.0)
+                d = 26.0;
+            if(dn == 25.0)
+                d = 32.0;
+            if(dn == 32.0)
+                d = 40.0;
+            if(dn == 40.0)
+                d = 50.0;
+            if(dn == 50.0)
+                d = 63.0;
+            if(dn == 65.0)
+                d = 75.0;
+            if(dn == 80.0)
+                d = 90.0;
+            if(dn == 100.0)
+                d = 110.0;
+        }
+        return d;
+
+    }
+    static double diameterInnside(double dn, const QString &material){
+
+        double d = 0.0;
+        if(material == "verz. Stahl")
+        {
+            if( dn == 10.0)
+                d = 11.5;
+
+            if( dn == 15.0)
+                d = 15.2;
+
+            if( dn == 20.0)
+                d = 20.7;
+
+            if( dn == 25.0)
+                d = 26.1;
+
+            if( dn == 32.0)
+                d = 34.8;
+
+            if( dn == 40.0)
+                d = 40.7;
+
+            if( dn == 50.0)
+                d = 51.6;
+
+            if( dn == 65.0)
+                d = 67.2;
+
+            if( dn == 80.0)
+                d = 79.0;
+
+            if( dn == 100.0)
                 d = 103.0;
         }
         if(material == "Kupfer")
         {
-            if(da && dn == 10.0)
-                d = 12.0;
-            if(!da && dn == 10.0)
+
+            if( dn == 10.0)
                 d = 10.0;
-            if(da && dn == 12.0)
-                d = 15.0;
-            if(!da && dn == 12.0)
+
+            if( dn == 12.0)
                 d = 13.0;
-            if(da && dn == 15.0)
-                d = 18.0;
-            if(!da && dn == 15.0)
+
+            if( dn == 15.0)
                 d = 16.0;
-            if(da && dn == 20.0)
-                d = 22.0;
-            if(!da && dn == 20.0)
+
+            if( dn == 20.0)
                 d = 20.0;
-            if(da && dn == 25.0)
-                d = 28.0;
-            if(!da && dn == 25.0)
+
+            if( dn == 25.0)
                 d = 25.0;
-            if(da && dn == 32.0)
-                d = 35.0;
-            if(!da && dn == 32.0)
+
+            if( dn == 32.0)
                 d = 32.0;
-            if(da && dn == 40.0)
-                d = 42.0;
-            if(!da && dn == 40.0)
+
+            if( dn == 40.0)
                 d = 39.0;
-            if(da && dn == 50.0)
-                d = 60.3;
-            if(!da && dn == 50.0)
+
+            if( dn == 50.0)
                 d = 51.6;
-            if(da && dn == 65.0)
+
+            if(dn == 65.0)
                 d = 76.1;
-            if(!da && dn == 65.0)
-                d = 67.2;
-            if(da && dn == 80.0)
+
+            if(dn == 80.0)
                 d = 88.9;
-            if(!da && dn == 80.0)
+
+            if( dn == 80.0)
                 d = 79.0;
-            if(da && dn == 100.0)
-                d = 114.3;
-            if(!da && dn == 100.0)
+
+            if( dn == 100.0)
                 d = 103.0;
         }
         if(material == "Edelstahl")
         {
-            if(da && dn == 10.0)
-                d = 12.0;
-            if(!da && dn == 10.0)
+
+            if( dn == 10.0)
                 d = 10.0;
-            if(da && dn == 12.0)
-                d = 15.0;
-            if(!da && dn == 12.0)
+
+            if( dn == 12.0)
                 d = 13.0;
-            if(da && dn == 15.0)
-                d = 18.0;
-            if(!da && dn == 15.0)
+
+            if( dn == 15.0)
                 d = 16.0;
-            if(da && dn == 20.0)
-                d = 22.0;
-            if(!da && dn == 20.0)
+
+            if( dn == 20.0)
                 d = 19.6;
-            if(da && dn == 25.0)
-                d = 28.0;
-            if(!da && dn == 25.0)
+
+            if( dn == 25.0)
                 d = 25.6;
-            if(da && dn == 32.0)
-                d = 35.0;
-            if(!da && dn == 32.0)
+
+            if( dn == 32.0)
                 d = 32.0;
-            if(da && dn == 40.0)
-                d = 42.0;
-            if(!da && dn == 40.0)
+
+            if( dn == 40.0)
                 d = 39.0;
-            if(!da && dn == 50.0)
-                d = 54.0;
-            if(!da && dn == 50.0)
+
+            if( dn == 50.0)
                 d = 51.0;
-            if(!da && dn == 60.0)
-                d = 64.0;
-            if(!da && dn == 60.0)
+
+            if( dn == 60.0)
                 d = 60.0;
-            if(!da && dn == 65.0)
-                d = 76.1;
-            if(!da && dn == 65.0)
+
+            if( dn == 65.0)
                 d = 72.1;
-            if(!da && dn == 80.0)
-                d = 88.9;
-            if(!da && dn == 80.0)
+
+            if( dn == 80.0)
                 d = 84.9;
-            if(!da && dn == 100.0)
-                d = 108.0;
-            if(!da && dn == 100.0)
+
+            if( dn == 100.0)
                 d = 104.0;
         }
         if(material == "PP" || material == "PB" || material == "PVC")
         {
-            if(da && dn == 10.0)
-                d = 12.0;
-            if(!da && dn == 10.0)
+
+            if( dn == 10.0)
                 d = 10.0;
-            if(da && dn == 12.0)
-                d = 16.0;
-            if(!da && dn == 12.0)
+
+            if( dn == 12.0)
                 d = 11.6;
-            if(da && dn == 15.0)
-                d = 20.0;
-            if(!da && dn == 15.0)
+
+            if( dn == 15.0)
                 d = 14.6;
-            if(da && dn == 20.0)
-                d = 25.0;
-            if(!da && dn == 20.0)
+
+            if( dn == 20.0)
                 d = 18.0;
-            if(da && dn == 25.0)
-                d = 32.0;
-            if(!da && dn == 25.0)
+
+            if( dn == 25.0)
                 d = 23.3;
-            if(da && dn == 32.0)
-                d = 40.0;
-            if(!da && dn == 32.0)
+
+            if( dn == 32.0)
                 d = 29.0;
-            if(da && dn == 40.0)
-                d = 50.0;
-            if(!da && dn == 40.0)
+
+            if( dn == 40.0)
                 d = 36.2;
-            if(da && dn == 50.0)
-                d = 63.0;
-            if(!da && dn == 50.0)
+
+            if( dn == 50.0)
                 d = 45.8;
-            if(da && dn == 65.0)
-                d = 75.0;
-            if(!da && dn == 65.0)
+
+            if( dn == 65.0)
                 d = 54.4;
-            if(da && dn == 80.0)
-                d = 90.0;
-            if(!da && dn == 80.0)
+
+            if( dn == 80.0)
                 d = 65.4;
-            if(da && dn == 100.0)
-                d = 110.0;
-            if(!da && dn == 100.0)
+
+            if( dn == 100.0)
                 d = 79.8;
 
         }
         if(material == "PEXAL Verbund")
         {
-            if(da && dn == 10.0)
-                d = 12.0;
-            if(!da && dn == 10.0)
+
+            if( dn == 10.0)
                 d = 8.6;
-            if(da && dn == 12.0)
-                d = 16.0;
-            if(!da && dn == 12.0)
+
+            if( dn == 12.0)
                 d = 11.0;
-            if(da && dn == 15.0)
-                d = 20.0;
-            if(!da && dn == 15.0)
+
+            if( dn == 15.0)
                 d = 14.0;
-            if(da && dn == 20.0)
-                d = 26.0;
-            if(!da && dn == 20.0)
+
+            if( dn == 20.0)
                 d = 17.6;
-            if(da && dn == 25.0)
-                d = 32.0;
-            if(!da && dn == 25.0)
+
+            if( dn == 25.0)
                 d = 22.5;
-            if(da && dn == 32.0)
-                d = 40.0;
-            if(!da && dn == 32.0)
+
+            if( dn == 32.0)
                 d = 28.0;
-            if(da && dn == 40.0)
-                d = 50.0;
-            if(!da && dn == 40.0)
+
+            if( dn == 40.0)
                 d = 36.2;
-            if(da && dn == 50.0)
-                d = 63.0;
-            if(!da && dn == 50.0)
+
+            if( dn == 50.0)
                 d = 45.8;
-            if(da && dn == 65.0)
-                d = 75.0;
-            if(!da && dn == 65.0)
+
+            if( dn == 65.0)
                 d = 60.0;
-            if(da && dn == 80.0)
-                d = 90.0;
-            if(!da && dn == 80.0)
+
+            if( dn == 80.0)
                 d = 73.0;
-            if(da && dn == 100.0)
-                d = 110.0;
-            if(!da && dn == 100.0)
+
+            if( dn == 100.0)
                 d = 90.0;
         }
         return d;
@@ -489,6 +571,18 @@ public:
         return dn;
     }
 
+    static double kinematicViscosity(double dynVisc, double density){
+        return dynVisc/density;
+    }
+
+    static double dynamicViscosity(bool cold){
+
+        double dvis = 1305.0 * qPow(10,-6);    // 10°C
+        if(!cold)
+            dvis = 466.6 * qPow(10,-6);         // 60°C
+
+        return dvis;
+    }
 
 public slots:
     void pipeInfoObjectTableClicked(const QString &text);
@@ -507,7 +601,7 @@ private slots:
     void showArmaturStatus(bool status);
     void buildingArtChanged(const QString);
     void scrollBarMoved(int);
-    void on_spitzendurchflussBox_valueChanged(double /*arg1*/);
+    void spitzendurchflussBoxValueChanged(double);
 
     void actionSaveProject();
     void actionLoadProject();
@@ -573,6 +667,9 @@ private slots:
 
     // SectionPipeDialog
     void rowSelect(int row, int column);
+
+    // DialogCalculatedPipe
+     void calculatedPipeClicked(int pipeNr);
 
 private:
     Ui::FSAquaWindow *ui;
@@ -649,22 +746,42 @@ private:
     bool objectListContains(const QList<GBadObject *> &list, GBadObject::GBadObjectType type);
     void updateHeightPressureDiff();
     void updatePressureLossArmatur();
-    double getPipeListLength(QList<GPipe *> pList);
-    double getDPgeo(QList<GPipe *> pList);  // returns the hDiff in hPa
+
+    // DIN 1988 equations
+    DIN1988300 din1988;
+    EN806 en806;
+    double getPipeListLength(QList<GPipe *> pList);     // returns the length of section pipe
+    double getDPgeo(QList<GPipe *> pList);              // returns the hDiff in hPa
+    double getPminFL(QList<GPipe *> pList);             // returns the min. flowpressure from object in hPa
+    double getDPap(QList<GPipe *> pList);               // returns the pressure loss from valves etc..
+    double getRv(QList<GPipe *> pList);                 // Equations 10 from DIN 1988 returns available pressure loss
+    double getPR(GPipe *p);                             // Equations 1 from DIN 1988 returns the pressure loss in section pipe
+    double getR(GPipe *p);                              // Equations 2 from DIN 1988 returns the pressure loss in pipe
+    //double getReynolds(double v, double di, double density, bool cold);            //
+
+    double getPropotionResistance(QList<GPipe *> pList); // proportion of single resistance in %
+
 
     // When calculate the pipe
     int getPipeLU(GPipe *pipe);
     QMap<int, QList<int>> calculatedPipeMap;
     QMap<int, QList<int>> setupCalculatedMap();
+    DialogCalculatedPipe *dlgCalulatedPipe;
+    void setupDialogCalulatedPipe(QMap<int, QList<int>> map);
+
+
+
 
     // Floors
     QList<QGraphicsRectItem*> floorList;
     int getFloorIndex(QPointF pos);
 
     // Measure
-    QList<QGraphicsItem *> measureList;
+    //QList<QGraphicsItem *> measureList;
     QGraphicsTextItem *measureText;
     QGraphicsLineItem *measureLine;
+    QGraphicsLineItem *measureHelpLine;
+
 
     int floorCount;
     int floorHeight;
