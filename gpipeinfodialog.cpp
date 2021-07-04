@@ -21,9 +21,9 @@ GPipeInfoDialog::GPipeInfoDialog(GPipe *pipe, QWidget *parent) :
 
     QPalette pal = ui->nrBox->palette();
     if(currentPipe->cold())
-        pal.setColor(QPalette::Base, Qt::darkGreen);
+        pal.setColor(QPalette::Base, QColor(0,255,0));
     else
-        pal.setColor(QPalette::Base, Qt::red);
+        pal.setColor(QPalette::Base, QColor(255,51,51));
     ui->nrBox->setPalette(pal);
     ui->nrBox->setForegroundRole(QPalette::Text);
 
