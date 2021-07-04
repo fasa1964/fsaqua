@@ -2,6 +2,7 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QMap>
 
 namespace Ui {
 class SettingsDialog;
@@ -15,8 +16,20 @@ public:
     explicit SettingsDialog(QWidget *parent = nullptr);
     ~SettingsDialog();
 
+    void setPipeMap(const QMap<QString, QString> &map);
+
+signals:
+    void pipeMapChanged(const QMap<QString, QString> &map);
+
+private slots:
+    void on_cancelButton_clicked(bool);
+    void on_okButton_clicked(bool);
+
 private:
     Ui::SettingsDialog *ui;
+
+    QMap<QString, QString> pipeMap;
+
 };
 
 #endif // SETTINGSDIALOG_H
