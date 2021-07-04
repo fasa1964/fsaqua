@@ -433,12 +433,13 @@
     <addaction name="actionShowMousePos"/>
     <addaction name="actionShowPipesectionsInfo"/>
     <addaction name="actionShowArmaturStatus"/>
+    <addaction name="actionShowCalculatedPipeTable"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Settings</string>
     </property>
-    <addaction name="actionPipeMaterial"/>
+    <addaction name="actionPipeSettings"/>
    </widget>
    <addaction name="menuApp"/>
    <addaction name="menuCustomer"/>
@@ -582,9 +583,9 @@
     <string>Show pipe nr</string>
    </property>
   </action>
-  <action name="actionPipeMaterial">
+  <action name="actionPipeSettings">
    <property name="text">
-    <string>Pipe material</string>
+    <string>Pipe settings</string>
    </property>
   </action>
   <action name="actionNewProject">
@@ -609,6 +610,14 @@
    </property>
    <property name="text">
     <string>&amp;Delete</string>
+   </property>
+  </action>
+  <action name="actionShowCalculatedPipeTable">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show calculated pipe table</string>
    </property>
   </action>
  </widget>

@@ -23,6 +23,8 @@
 #include <en806.h>
 #include <din1988300.h>
 #include <dialogcalculatedpipe.h>
+#include <settingsdialog.h>
+
 
 #define MAXFLOORS 15
 #define MINSCENEHEIGHT 380
@@ -599,6 +601,7 @@ private slots:
     void showPipeSectionsInfo(bool status);
     void showFormVS();
     void showArmaturStatus(bool status);
+    void showCalculatedPipeDialog(bool status);
     void buildingArtChanged(const QString);
     void scrollBarMoved(int);
     void spitzendurchflussBoxValueChanged(double);
@@ -607,6 +610,7 @@ private slots:
     void actionLoadProject();
     void actionNewProject();
     void actionDeleteProject();
+    void actionPipeSettings();
     void clearScene();
 
     // Tools slots
@@ -669,7 +673,11 @@ private slots:
     void rowSelect(int row, int column);
 
     // DialogCalculatedPipe
-     void calculatedPipeClicked(int pipeNr);
+    void calculatedPipeClicked(int pipeNr);
+
+
+    // SettingsDialog
+    void pipeMapChanged(const QMap<QString, QString> &map);
 
 private:
     Ui::FSAquaWindow *ui;
@@ -686,7 +694,7 @@ private:
     bool pipeTested;
     bool statusLoading;
     QMap<int, double> scaleMap;
-    QMap<QString, QString> pipeMaterial;
+    //QMap<QString, QString> pipeMaterial;
 
 
     // the type of connecting between
@@ -766,6 +774,8 @@ private:
     int getPipeLU(GPipe *pipe);
     QMap<int, QList<int>> calculatedPipeMap;
     QMap<int, QList<int>> setupCalculatedMap();
+    bool containsPipeType(QList<int> ilist, GPipe::GPipeType type);
+    int getPipeNr(QList<int> ilist, GPipe::GPipeType type);
     DialogCalculatedPipe *dlgCalulatedPipe;
     void setupDialogCalulatedPipe(QMap<int, QList<int>> map);
 
@@ -781,6 +791,7 @@ private:
     QGraphicsTextItem *measureText;
     QGraphicsLineItem *measureLine;
     QGraphicsLineItem *measureHelpLine;
+    void hideMeasurement();
 
 
     int floorCount;
@@ -825,6 +836,12 @@ private:
     // GArmatur
     QList<GArmatur *> armaturList;
     GArmatur *selectedArmatur;
+
+    // Setting
+    SettingsDialog *settingsDialog;
+    QMap<QString, QString> pipeSettingsMap;
+    void saveApplicationSettings();
+    void loadApllicationSettings();
 
     void calculateDINEN806();
     void calculateDIN1988();
