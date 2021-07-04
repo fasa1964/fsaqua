@@ -113,41 +113,7 @@ void PipeListWidget::setValue(int sectionPipeNr, int column, double value, const
             }
         }
     }
-
-
-//    QTableWidgetItem *item = ui->tableWidget->item(row, column);
-//    if(item != nullptr)
-//    {
-//        item->setText(QString("%1 ").arg(value)+einheit);
-//        ui->tableWidget->resizeColumnsToContents();
-//        ui->tableWidget->update();
-//    }
 }
-
-
-// Testing for saving and loading the project
-//QMap<QString, QVariant> PipeListWidget::getPipeSectionInfos()
-//{
-//    QMap<QString, QVariant> map;
-//    for (int r = 0; r < ui->tableWidget->rowCount(); r++)
-//    {
-//        QStringList textList;
-//        for(int c = 0; c < ui->tableWidget->columnCount(); c++)
-//        {
-//            QString text = ui->tableWidget->item(r,c)->text();
-//            textList << text;
-//        }
-
-//        map.insert( QString("%1").arg(r), textList);
-//    }
-
-//    return map;
-//}
-
-//void PipeListWidget::setPipeSectionInfos(QMap<int, QStringList> map)
-//{
-
-//}
 
 void PipeListWidget::cellClicked(int row, int column)
 {
