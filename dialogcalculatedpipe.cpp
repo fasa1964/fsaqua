@@ -6,7 +6,7 @@ DialogCalculatedPipe::DialogCalculatedPipe(QWidget *parent) :
     ui(new Ui::DialogCalculatedPipe)
 {
     ui->setupUi(this);
-
+    setWindowTitle(tr("Calculated pipe info"));
     updateTable();
     connect(ui->pipeTableWidget, &QTableWidget::cellClicked, this, &DialogCalculatedPipe::cellClicked);
 }
