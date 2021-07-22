@@ -6,7 +6,7 @@ FormFormularVs::FormFormularVs(QWidget *parent) :
     ui(new Ui::FormFormularVs)
 {
     ui->setupUi(this);
-    setWindowTitle(tr("Formel Spitzendurchfluss"));
+    setWindowTitle(tr("Formula peak flow volume"));
 
 }
 
