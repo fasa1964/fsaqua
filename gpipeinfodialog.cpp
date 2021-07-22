@@ -133,11 +133,13 @@ void GPipeInfoDialog::updateObjectTable(QMap<int, QPair<double, double> > flowMa
     while (it.hasNext()) {
         it.next();
 
+        int lu = currentPipe->getLu(it.key());
+
         QTableWidgetItem *itemArt = new QTableWidgetItem(getArt(it.key()));
         QTableWidgetItem *itemNr = new QTableWidgetItem(QString("%1").arg( it.key() ));
         QTableWidgetItem *itemPWC = new QTableWidgetItem( QString("%1").arg( it.value().first ) );
         QTableWidgetItem *itemPWH = new QTableWidgetItem( QString("%1").arg( it.value().second ) );
-        QTableWidgetItem *itemLU = new QTableWidgetItem( QString("%1").arg( 0 ) );
+        QTableWidgetItem *itemLU = new QTableWidgetItem( QString("%1").arg( lu ) );
 
 
         ui->objectsTable->setItem(row,0, itemArt);

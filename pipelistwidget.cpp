@@ -115,6 +115,24 @@ void PipeListWidget::setValue(int sectionPipeNr, int column, double value, const
     }
 }
 
+void PipeListWidget::sortTable()
+{
+    ui->tableWidget->setSortingEnabled(false);
+
+    for(int i = 0; i < ui->tableWidget->rowCount(); i++){
+        QTableWidgetItem *item = ui->tableWidget->item(i,6);
+        if(item != nullptr){
+            bool ok;
+            double value = item->text().toDouble(&ok); Q_ASSERT(ok);
+            item->setData(Qt::DisplayRole, value);
+
+        }
+    }
+
+
+    ui->tableWidget->sortByColumn(6,Qt::AscendingOrder);
+}
+
 void PipeListWidget::cellClicked(int row, int column)
 {
     bool ok;

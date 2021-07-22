@@ -23,6 +23,7 @@ public:
     void setLabelStatus(const QString &text);
     void setText(int row, int column, const QString &text);
     void setValue(int sectionPipeNr, int column, double value, const QString &einheit);
+    void sortTable();
 
     // Testing for saving and loading the project
 //    QMap<QString, QVariant> getPipeSectionInfos();
