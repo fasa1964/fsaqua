@@ -47,3 +47,11 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 }
 
+void Scene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+        leftDoubleMouseButtonClicked(event->scenePos());
+
+    QGraphicsScene::mouseDoubleClickEvent(event);
+}
+

@@ -20,11 +20,13 @@ protected:
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
 
 signals:
     void mousePos(QPointF pos);
     void leftMouseButtonClicked(QPointF pos);
+    void leftDoubleMouseButtonClicked(QPointF pos);
     void leftMouseButtonReleased(QPointF pos);
     void rightMouseButtonClicked(QPointF pos);
     void middleMouseButtonClicked(QPointF pos);
