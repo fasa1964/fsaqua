@@ -312,6 +312,11 @@ void GArmatur::mousePressEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mousePressEvent(event);
 }
 
+void GArmatur::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+{
+    emit armaturInfo(this);
+}
+
 double GArmatur::getPeakFlow() const
 {
     return m_peakFlow;

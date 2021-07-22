@@ -66,6 +66,7 @@ public:
     void setGBadObjectList(QList<GBadObject *> list);
     QList<GBadObject *> badObjectList();
     bool containsObjectType(const GBadObject::GBadObjectType &type);
+    int getLu(int objNr);
 
     void insertFlow(int nr, double cold, double hot);
     QMap<int, QPair<double, double>> getObjectFlowMap();
@@ -155,6 +156,7 @@ signals:
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE;
     virtual QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) Q_DECL_OVERRIDE;
 
 private:

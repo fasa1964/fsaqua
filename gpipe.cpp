@@ -596,6 +596,18 @@ bool GPipe::containsObjectType(const GBadObject::GBadObjectType &type)
     return status;
 }
 
+int GPipe::getLu(int objNr)
+{
+    int lu = 0;
+    foreach(GBadObject *o, objectList){
+        if(o->getNr() == objNr){
+            lu = o->lu();
+            break;
+        }
+    }
+    return lu;
+}
+
 void GPipe::insertFlow(int nr, double cold, double hot)
 {
     QPair<double, double> p;
@@ -731,6 +743,11 @@ void GPipe::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     }
 
     menu.exec( event->screenPos() );
+}
+
+void GPipe::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+{
+     emit pipeInfo(this);
 }
 
 void GPipe::infoAction()

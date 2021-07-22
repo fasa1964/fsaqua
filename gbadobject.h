@@ -14,6 +14,7 @@
 #include <QGraphicsSceneContextMenuEvent>
 
 
+
 class GBadObject : public QGraphicsObject
 {
     Q_OBJECT
@@ -146,6 +147,7 @@ public slots:
 
 protected:
     virtual void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *) Q_DECL_OVERRIDE;
 
 private:
     int Type;

@@ -639,6 +639,11 @@ void GBadObject::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     menu.exec( event->screenPos() );
 }
 
+void GBadObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+{
+    emit objectInfo( this );
+}
+
 qreal GBadObject::getAnschlussHoehe() const
 {
     return m_anschlussHoehe;
@@ -862,46 +867,3 @@ QDataStream & operator >> (QDataStream& in, GBadObject& obj)
 
     return in;
 }
-
-
-//QDataStream & operator << (QDataStream& out, const QList<GBadObject *> &objList)
-//{
-//    GBadObject *obj;
-//    foreach (obj, objList)
-//    {
-//        out << obj->bezeichnung() << obj->fabrikat() << obj->scenePos() << obj->lu() <<
-//               obj->bdKW() << obj->bdWW() << obj->md() << obj->kwh();
-
-
-//    }
-
-//    return out;
-//}
-
-//QDataStream &operator >>(QDataStream &in, QList<GBadObject *> &objList)
-//{
-
-//    QString bez;
-//    QString fab;
-//    QPointF sp;
-//    int lu;
-//    double kw;
-//    double ww;
-//    int md;
-//    double kwh;
-
-//    in >> bez >> fab >> sp >> lu >> kw >> ww >> md >> kwh;
-
-//    GBadObject *obj = new GBadObject();
-//    obj->setBezeichnung(bez);
-//    obj->setFabrikat(fab);
-//    obj->setSPos(sp);
-//    obj->setLu(lu);
-//    obj->setBdKW(kw);
-//    obj->setBdWW(ww);
-//    obj->setMd(md);
-//    obj->setKwh(kwh);
-
-//    objList << obj;
-//    return in;
-//}
