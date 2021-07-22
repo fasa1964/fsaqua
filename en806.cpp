@@ -48,7 +48,7 @@ double EN806::getDA(const QString &material, int lu, int luMax, double len)
     if(material == "Edelstahl") // stainless steel
         da = daEdelstahlEN806(lu, luMax, len);
 
-    if(material == "Edelstahl") // pex-al (verbund)
+    if(material == "PEXAL Verbund") // pex-al (verbund)
         da = daPEXAL_EN806(lu, luMax, len) ;
 
     if(material == "PE-X") // pe-x
@@ -125,7 +125,6 @@ double EN806::daKupferEN806(int lu, int luMax, double len)
         else
             return da = 28;
     }
-
 
     if(lu > 20 && lu <= 50)
         return da = 28;
