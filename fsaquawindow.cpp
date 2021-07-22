@@ -51,6 +51,7 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     forwardConnecting = true;
     pipeTested = false;
     statusLoading = false;
+    pipeSettingsWasChanged = false;
 
     selectedObject = nullptr;
     selectedMarker = nullptr;
@@ -124,6 +125,9 @@ FSAquaWindow::FSAquaWindow(QWidget *parent) :
     connect(ui->actionShowArmaturStatus, &QAction::triggered, this, &FSAquaWindow::showArmaturStatus );
     connect(ui->formularFlowButton, &QToolButton::clicked, this, &FSAquaWindow::showFormVS );
     connect(ui->buildingBox, &QComboBox::currentTextChanged, this, &FSAquaWindow::buildingArtChanged );
+    connect(ui->mvdBox, QOverload<int>::of(&QSpinBox::valueChanged),
+            [=](int d){mvdValueChanged(d); });
+
     connect(ui->editorView->verticalScrollBar(), &QScrollBar::sliderMoved , this, &FSAquaWindow::scrollBarMoved );
     connect(ui->editorView->horizontalScrollBar(), &QScrollBar::sliderMoved , this, &FSAquaWindow::scrollBarMoved );
     connect(ui->spitzendurchflussBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
@@ -349,12 +353,25 @@ void FSAquaWindow::spitzendurchflussBoxValueChanged(double)
     }
 }
 
+void FSAquaWindow::mvdValueChanged(int)
+{
+    if(!statusLoading)
+    {
+        tools->setBlinkButton(true, "test");
+
+    }
+}
+
 void FSAquaWindow::actionSaveProject()
 {
     QString projectName = ui->projectNameEdit->text();
 
-    if(projectName.isEmpty())
+    if(projectName.isEmpty()){
+
+        QMessageBox::information(this, tr("Save projekt"), tr("Projekt name is required!"));
+        ui->projectNameEdit->setFocus();
         return;
+    }
 
     QFile file(projectName+".prj");
     if(!file.open(QIODevice::WriteOnly))
@@ -369,7 +386,7 @@ void FSAquaWindow::actionSaveProject()
 
 
         map.insert("name", ui->projectNameEdit->text());
-        map.insert("custom", "TestMich");
+        map.insert("custom", ui->customNameEdit->text());
         map.insert("art", ui->buildingBox->currentText() );
         map.insert("floorcount", tools->getFloorCount());
         map.insert("floorheight", tools->getfloorHeight());
@@ -783,7 +800,7 @@ void FSAquaWindow::actionLoadProject()
                 }
 
 
-                dlgCalulatedPipe->setCaptionText(ui->dinBox->currentText());
+                dlgCalulatedPipe->setCaptionText(tr("Calculated by ")+ui->dinBox->currentText());
                 dlgCalulatedPipe->show();
                 setupDialogCalulatedPipe(calculatedPipeMap);
             }
@@ -845,7 +862,33 @@ void FSAquaWindow::actionPipeSettings()
 
 void FSAquaWindow::pipeMapChanged(const QMap<QString, QString> &map)
 {
-    pipeSettingsMap = map;
+
+    // Do something when pipe was changed
+    // to confirm the settings
+    if(!pipeList.isEmpty() && pipeCalculated){
+       int ret = QMessageBox::information(this,tr("Settings changed"), tr("Pipe was already calculated. When you confirm the settings, "
+                    " the calculation will be deleted. Alter you confirm the settings, you have to click on button -Test- and than -Calculate-!"),
+                     QMessageBox::Abort | QMessageBox::Apply) ;
+       if(ret == QMessageBox::Abort)
+           return;
+
+       // Do change material pipe
+       tools->setBlinkButton(true, "test");
+       tools->enableCalculateButton(false);
+       pipeSettingsMap = map;
+       pipeSettingsWasChanged = true;
+       setupPipeMaterial();
+    }
+
+    if(!pipeList.isEmpty() && !pipeCalculated){
+        pipeSettingsMap = map;
+        pipeSettingsWasChanged = true;
+        setupPipeMaterial();
+    }
+
+    if(!pipeList.isEmpty() && !pipeCalculated && !teilstreckenMap.isEmpty()){
+        ;
+    }
 
 }
 
@@ -1077,6 +1120,8 @@ void FSAquaWindow::installButtonClicked()
    // Clear the SectionPipeDialog
    teilstreckenMap.clear();
    SectionPipeDialog->clearList();
+   dlgCalulatedPipe->clearList();
+   pipeCalculated = false;
 
 }
 
@@ -1187,20 +1232,74 @@ void FSAquaWindow::testInstallation()
         Sleep(duration);
         setupPipeObjects(teilstreckenMap);
 
-        Sleep(duration);
-        calculatedPipeMap = setupCalculatedMap();
+        // Calculate the dp(geo) in sectionpipe
+        QMapIterator<int, QList<GPipe *>>itGeo(teilstreckenMap);
+        while (itGeo.hasNext()) {
+            itGeo.next();
+            double dpGeo = getDPgeo(itGeo.value());
+            double pmin = getPminFL(itGeo.value());
+            double rv = getRv(itGeo.value());
+            qDebug() << "Rv" << rv;
+            SectionPipeDialog->setValue(itGeo.key(),3,dpGeo,"hPa");
+            SectionPipeDialog->setValue(itGeo.key(),4,pmin,"hPa");
+            SectionPipeDialog->setValue(itGeo.key(),6,rv,"");
+            Sleep(duration);
+        }
 
-        // Set DN from settings
-        QMapIterator<int, QList<int>>it(calculatedPipeMap);
-        while (it.hasNext()) {
+        updatePressureLossArmatur();
+        SectionPipeDialog->sortTable();
+
+
+        QMap<int, QList<int>> pmap;
+        QMap<double, QList<int>> sortmap;
+        QList<int> nrList;
+        pmap = setupCalculatedMap();
+
+        // Setup the pipe numbers
+        QMapIterator<int, QList<int>>it(pmap);
+        while (it.hasNext())
+        {
             it.next();
+            double vr = pipe( it.value().first())->getFlow();
+            sortmap.insertMulti(vr, it.value());
+        }
+
+        if(pmap.size() != sortmap.size())
+        {
+            QMessageBox::critical(this, "Error", "Map size is different!");
+            return;
+        }
+
+
+        int index = 1;
+        QMapIterator<double, QList<int>>its(sortmap);
+        its.toBack();
+        int nr = 0;
+        while (its.hasPrevious())
+        {
+            its.previous();
+            calculatedPipeMap.insert(index, its.value());
+            index++;
+            nr++;
+        }
+
+        setupPipeMaterial();
+
+        // Set DN from settings and material
+        QMapIterator<int, QList<int>>itt(calculatedPipeMap);
+        while (itt.hasNext()) {
+            itt.next();
             QList<int>iList;
-            iList = it.value();
+            iList = itt.value();
             if(iList.contains(0)) // Main pipe
             {
-                int dn = pipe(0)->getDn();
-                foreach(int nr , iList)
+                bool ok;
+                int dn = pipeSettingsMap.value("maindn").toInt(&ok); Q_ASSERT(ok);
+                QString material = pipeSettingsMap.value("main");
+                foreach(int nr , iList){
                     pipe(nr)->setDn(dn);
+                    pipe(nr)->setMaterial(material);
+                }
             }
 
             if(containsPipeType(iList, GPipe::RGA))
@@ -1208,9 +1307,17 @@ void FSAquaWindow::testInstallation()
                 GPipe *p =  pipe( getPipeNr(iList, GPipe::RGA) );
                 if(p->badObjectList().size() == 1)
                 {
-                    int dn = p->getDn();
-                    foreach(int nr , iList)
+                    bool ok;
+                    int dn = pipeSettingsMap.value("connectingdn").toInt(&ok); Q_ASSERT(ok);
+                    QString material;
+                    if(p->cold())
+                        material = pipeSettingsMap.value("connectingcold");
+                    else
+                        material = pipeSettingsMap.value("connectinghot");
+                    foreach(int nr , iList){
                             pipe(nr)->setDn(dn);
+                            pipe(nr)->setMaterial(material);
+                    }
                 }
 
                 foreach(int pnr, iList)
@@ -1218,9 +1325,17 @@ void FSAquaWindow::testInstallation()
                     GPipe *p = pipe(pnr);
                     if(p->badObjectList().size() > 1 && p->cold() && p->containsObjectType(GBadObject::WSIB))
                     {
-                        int dn = p->getDn();
-                        foreach(int nr , iList)
+                        bool ok;
+                        int dn = pipeSettingsMap.value("collectingdn").toInt(&ok); Q_ASSERT(ok);
+                        QString material;
+                        if(p->cold())
+                            material = pipeSettingsMap.value("collectingcold");
+                        else
+                            material = pipeSettingsMap.value("collectinghot");
+                        foreach(int nr , iList){
                             pipe(nr)->setDn(dn);
+                            pipe(nr)->setMaterial(material);
+                        }
                         break;
                     }
                 }
@@ -1229,28 +1344,45 @@ void FSAquaWindow::testInstallation()
             if(!containsPipeType(iList, GPipe::RGA) && containsPipeType(iList, GPipe::STRANG ))
             {
                 GPipe *p =  pipe( getPipeNr(iList, GPipe::STRANG) );
-                int dn = p->getDn();
-                    foreach(int nr , iList)
-                        pipe(nr)->setDn(dn);
+                bool ok;
+                int dn = pipeSettingsMap.value("risingdn").toInt(&ok); Q_ASSERT(ok);
+                QString material;
+                if(p->cold())
+                    material = pipeSettingsMap.value("risingcold");
+                else
+                    material = pipeSettingsMap.value("risinghot");
+                foreach(int nr , iList){
+                    pipe(nr)->setDn(dn);
+                    pipe(nr)->setMaterial(material);
+                }
             }
 
+            if(containsPipeType(iList, GPipe::RGS ))
+            {
+                if(!containsPipeType(iList, GPipe::RGA) && !containsPipeType(iList, GPipe::STRANG) )
+                {
+                    GPipe *p =  pipe( getPipeNr(iList, GPipe::RGS) );
+                    bool ok;
+                    int dn = pipeSettingsMap.value("collectingdn").toInt(&ok); Q_ASSERT(ok);
+                    QString material;
+                    if(p->cold())
+                        material = pipeSettingsMap.value("collectingcold");
+                    else
+                        material = pipeSettingsMap.value("collectinghot");
+                    foreach(int nr , iList){
+                        pipe(nr)->setDn(dn);
+                        pipe(nr)->setMaterial(material);
+                    }
+                }
+            }
         }
+
 
         setupDialogCalulatedPipe(calculatedPipeMap);
         dlgCalulatedPipe->show();
 
-
-
         sendMessage(tr("Configure pipe's done!"));
         Sleep(duration);
-
-
-
-//        sendMessage(tr("Calculate pressure loss Hgeo"));
-//        updateHeightPressureDiff();
-
-//        sendMessage(tr("Calculate pressure loss in valves"));
-//        updatePressureLossArmatur();
 
         if(statusText != nullptr)
             statusText->hide();
@@ -1277,9 +1409,6 @@ void FSAquaWindow::testInstallation()
 void FSAquaWindow::calculateInstallation()
 {
     sendMessage(tr("Check all valves!"));
-    calculatedPipeMap.clear();
-    dlgCalulatedPipe->clearList();
-    dlgCalulatedPipe->hide();
 
     // Turn off the armatur status
     showArmaturStatus(false);
@@ -1316,38 +1445,25 @@ void FSAquaWindow::calculateInstallation()
 
     if(!aMapFailed.isEmpty())
     {
-        QMessageBox::information(this, tr("Valve error"), tr("Some valves without pressure loss!\nPlease check valves."));
+        QMessageBox::information(this, tr("Valve error"), tr("Some valves without pressure loss.\nPlease check valves!"));
         return;
     }
 
-    // Continue with section pipe for calculating pressure loss
-//    QMapIterator<int, QList<GPipe *>>it(teilstreckenMap);
-//    while (it.hasNext()) {
-//        it.next();
-//        QList<GPipe *>pList;
-//        foreach(GPipe *p, pList)
-//        {
-//            ;
-//        }
-
-//        double rv = getRv(it.value());
-//        SectionPipeDialog->setValue( it.key(), 6, rv, "hPa");
-//    }
-
-
-    sendMessage(tr("Setup all pipes!"));
-    calculatedPipeMap = setupCalculatedMap();
     resetPipeColor();
     removeStatusText();
 
-    if(ui->dinBox->currentText() == "DIN 1988")
-        calculateDIN1988();
-    else
-        calculateDINEN806();
 
+    dlgCalulatedPipe->clearList();
     dlgCalulatedPipe->setCaptionText(ui->dinBox->currentText());
     dlgCalulatedPipe->show();
-    setupDialogCalulatedPipe(calculatedPipeMap);
+
+    if(ui->dinBox->currentText() == "DIN 1988"){
+        calculateDIN1988();
+
+    }else{
+        calculateDINEN806();
+    }
+
 
 }
 
@@ -2249,8 +2365,13 @@ void FSAquaWindow::rowSelect(int row, int column)
     QList<GPipe *> pList = teilstreckenMap.value(row);
     resetPipeColor();
 
-    foreach(GPipe *p, pList)
+    qDebug() << "------------------";
+    foreach(GPipe *p, pList){
         p->setColor(Qt::cyan);
+        qDebug() << p->getNr() << "| previous-count:" << previousCPipe(pipe(p->getNr())).size() << "| next-count: " << nextPipe(pipe(p->getNr())).size();
+
+    }
+    qDebug() << "------------------";
 
     if(measureText->isVisible())
         measureText->setVisible(false);
@@ -2528,8 +2649,12 @@ void FSAquaWindow::updatePressureLossArmatur()
         }
 
         SectionPipeDialog->setValue(it.key(), 5, pressureLoss, "hPa");
+        double rv = getRv(pList);
+        SectionPipeDialog->setValue(it.key(),6,rv,"");
 
     }
+
+    SectionPipeDialog->sortTable();
 }
 
 double FSAquaWindow::getPipeListLength(QList<GPipe *> pList)
@@ -2605,7 +2730,7 @@ double FSAquaWindow::getDPap(QList<GPipe *> pList)
 double FSAquaWindow::getRv(QList<GPipe *> pList)
 {
 
-    double a = getPropotionResistance(pList);   // Anteil der Druckverluste durch Einzelwiderstände in %
+    double a = 45.0;//getPropotionResistance(pList);   // Anteil der Druckverluste durch Einzelwiderstände in %
     double lges = getPipeListLength(pList);     // Länge der Teilstrecke
     double pgeo = getDPgeo(pList);              // Druckverlust durch geodätichem Höhenunterschied in hPa
     double pap = getDPap(pList);                // Druckverluste durch Ventile und Apparate in hPa
@@ -2617,6 +2742,11 @@ double FSAquaWindow::getRv(QList<GPipe *> pList)
 
     double rv = (1-a/100) / lges * pgesv;
     return rv;
+}
+
+double FSAquaWindow::getDPges(QList<GPipe *> pList)
+{
+
 }
 
 double FSAquaWindow::getPR(GPipe *p)
@@ -2670,8 +2800,6 @@ QMap<int, QList<int> > FSAquaWindow::setupCalculatedMap()
     int index = 1;
     QMap<int,int> startMap;
 
-
-    //startMap.insert(startMap.size(), 0);
     foreach(GPipe *p, pipeList)
     {
         if(!p->getMarker())
@@ -3298,6 +3426,36 @@ void FSAquaWindow::installRisingPipe()
             }
         }
 
+    }
+
+}
+
+
+void FSAquaWindow::setupPipeMaterial()
+{
+    foreach(GPipe *p, pipeList){
+        if(!p->getMarker()){
+            if(p->type() == GPipe::RGA){
+                if(p->cold())
+                    p->setMaterial(pipeSettingsMap.value("connectingcold"));
+                else
+                    p->setMaterial(pipeSettingsMap.value("connectinghot"));
+            }
+            if(p->type() == GPipe::RGS){
+                if(p->cold())
+                    p->setMaterial(pipeSettingsMap.value("collectingcold"));
+                else
+                    p->setMaterial(pipeSettingsMap.value("collectinghot"));
+            }
+            if(p->type() == GPipe::STRANG){
+                if(p->cold())
+                    p->setMaterial(pipeSettingsMap.value("risingcold"));
+                else
+                    p->setMaterial(pipeSettingsMap.value("risinghot"));
+            }
+            if(p->getNr() == 0)
+                p->setMaterial(pipeSettingsMap.value("main"));
+            }
     }
 
 }
@@ -4154,26 +4312,33 @@ void FSAquaWindow::calculateDINEN806()
             meter += pipe(nr)->getMeter();
 
         int lu = 0;
-        foreach(GBadObject *o, pipe(it.value().first())->badObjectList() )
+        int lumax = 0;
+        foreach(GBadObject *o, pipe(it.value().first())->badObjectList() ){
             lu += o->lu();
+            if(lu > lumax)
+                lumax = lu;
+        }
 
-        double da = en806.getDA(material, lu, lu, meter);
+        double da = en806.getDA(material, lu, lumax, meter);
         int dn = FSAquaWindow::getDN(da, material);
+        double di = FSAquaWindow::diameterInnside(dn, material);
+        double vr = pipe(it.value().first())->getFlow();
+        double vs = getPeakFlow( pipe(it.value().first()) );
+
+//        qDebug() << material;
+//        qDebug() << "Da: " << da;
+//        qDebug() << "DN: " << dn;
+//        qDebug() << "Di: " << di;
 
         foreach(int nr, it.value())
             pipe(nr)->setDn(dn);
 
-//        qDebug() << "---------------------";
-//        qDebug() << "Index:" << it.key();
-//        qDebug() << "Ma:" << material;
-//        qDebug() << "LU:" << lu;
-//        qDebug() << "DN:" << dn;
-//        qDebug() << "Da:" << da;
-//        qDebug() << "---------------------";
-
+        dlgCalulatedPipe->insertRow(it.key(), dn, da, di, material, meter, vr, vs, lu );
+        Sleep(duration);
     }
 
     sendMessage(tr("Calculation DIN EN 806 successfully done!"));
+    dlgCalulatedPipe->setCaptionText(tr("Calculated by ")+ui->dinBox->currentText());
     Sleep(duration);
 
     removeStatusText();

@@ -99,11 +99,11 @@ public:
 
         if(dinTyp == "DIN EN 806")
             list << "Kupfer" << "Edelstahl" << "PEXAL Verbund" <<
-                    "PE-X" << "PB" << "PP" << "PVC" << "verz. Stahl" ;
+                     "PB" << "PP" << "PVC" << "verz. Stahl" ;
 
         if(dinTyp == "DIN 1988")
             list << "Kupfer" << "Edelstahl" << "PEXAL Verbund" <<
-                    "PE-X" << "PB" << "PP" << "PVC" << "verz. Stahl" ;
+                    "PB" << "PP" << "PVC" << "verz. Stahl" ;
 
         return list;
     }
@@ -569,6 +569,31 @@ public:
             if(da == 114.3)
                 dn = 100;
         }
+        if(material == "PP" || material == "PB" || material == "PVC")
+        {
+            if(da == 12.0)
+                dn = 10;
+            if(da == 16.0)
+                dn = 12;
+            if(da == 20.0)
+                dn = 15;
+            if(da == 25.0)
+                dn = 20;
+            if(da == 32.0)
+                dn = 25;
+            if(da == 40.0)
+                dn = 32;
+            if(da == 50.0)
+                dn = 40;
+            if(da == 63.0)
+                dn = 50;
+            if(da == 75.0)
+                dn = 65;
+            if(da == 90.0)
+                dn = 80;
+            if(da == 110.0)
+                dn = 100;
+        }
 
         return dn;
     }
@@ -605,6 +630,7 @@ private slots:
     void buildingArtChanged(const QString);
     void scrollBarMoved(int);
     void spitzendurchflussBoxValueChanged(double);
+    void mvdValueChanged(int);
 
     void actionSaveProject();
     void actionLoadProject();
@@ -655,7 +681,6 @@ private slots:
     void acceptConnecting();
     void forwardConnectingChanged(bool status);
 
-
     void durationChanged(int value);
 
     // GArmatur
@@ -693,6 +718,7 @@ private:
     bool dropMainPipe;
     bool pipeTested;
     bool statusLoading;
+    bool pipeSettingsWasChanged;
     QMap<int, double> scaleMap;
     //QMap<QString, QString> pipeMaterial;
 
@@ -727,6 +753,7 @@ private:
     bool installConectingPipe();
     bool installCollectingPipe();
     void installRisingPipe();
+    void setupPipeMaterial();                 // Set the material from pipeSettingsMap
     bool pipeStartConnecting;
     QMap<int, GPipe *> connectingPipeMap;
     QMap<int, GPipe *> insertedPipeMap;
@@ -763,6 +790,7 @@ private:
     double getPminFL(QList<GPipe *> pList);             // returns the min. flowpressure from object in hPa
     double getDPap(QList<GPipe *> pList);               // returns the pressure loss from valves etc..
     double getRv(QList<GPipe *> pList);                 // Equations 10 from DIN 1988 returns available pressure loss
+    double getDPges(QList<GPipe *> pList);              // Equations 11 from DIN 1988 returns available pressure loss difference
     double getPR(GPipe *p);                             // Equations 1 from DIN 1988 returns the pressure loss in section pipe
     double getR(GPipe *p);                              // Equations 2 from DIN 1988 returns the pressure loss in pipe
     //double getReynolds(double v, double di, double density, bool cold);            //
@@ -778,9 +806,6 @@ private:
     int getPipeNr(QList<int> ilist, GPipe::GPipeType type);
     DialogCalculatedPipe *dlgCalulatedPipe;
     void setupDialogCalulatedPipe(QMap<int, QList<int>> map);
-
-
-
 
     // Floors
     QList<QGraphicsRectItem*> floorList;
